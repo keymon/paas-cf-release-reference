@@ -1,0 +1,69 @@
+[submodule "repos/consul-release"]
+	path = repos/consul-release
+	url = https://github.com/cloudfoundry-incubator/consul-release
+[submodule "repos/nats-release"]
+	path = repos/nats-release
+	url = https://github.com/cloudfoundry/nats-release
+[submodule "repos/uaa-release"]
+	path = repos/uaa-release
+	url = https://github.com/cloudfoundry/uaa-release
+[submodule "repos/statsd-injector-release"]
+	path = repos/statsd-injector-release
+	url = https://github.com/cloudfoundry/statsd-injector-release
+[submodule "repos/cf-routing-release"]
+	path = repos/cf-routing-release
+	url = https://github.com/cloudfoundry-incubator/cf-routing-release
+[submodule "repos/capi-release"]
+	path = repos/capi-release
+	url = https://github.com/cloudfoundry/capi-release
+[submodule "repos/diego-release"]
+	path = repos/diego-release
+	url = https://github.com/cloudfoundry/diego-release
+[submodule "repos/garden-runc-release"]
+	path = repos/garden-runc-release
+	url = https://github.com/cloudfoundry/garden-runc-release
+[submodule "repos/cflinuxfs2-release"]
+	path = repos/cflinuxfs2-release
+	url = https://github.com/cloudfoundry/cflinuxfs2-release
+[submodule "repos/cf-syslog-drain-release"]
+	path = repos/cf-syslog-drain-release
+	url = https://github.com/cloudfoundry/cf-syslog-drain-release
+[submodule "repos/loggregator-release"]
+	path = repos/loggregator-release
+	url = https://github.com/cloudfoundry/loggregator-release
+[submodule "repos/binary-buildpack-release"]
+	path = repos/binary-buildpack-release
+	url = https://github.com/cloudfoundry/binary-buildpack-release
+[submodule "repos/go-buildpack-release"]
+	path = repos/go-buildpack-release
+	url = https://github.com/cloudfoundry/go-buildpack-release
+[submodule "repos/java-buildpack-release"]
+	path = repos/java-buildpack-release
+	url = https://github.com/cloudfoundry/java-buildpack-release
+[submodule "repos/nodejs-buildpack-release"]
+	path = repos/nodejs-buildpack-release
+	url = https://github.com/cloudfoundry/nodejs-buildpack-release
+[submodule "repos/php-buildpack-release"]
+	path = repos/php-buildpack-release
+	url = https://github.com/cloudfoundry/php-buildpack-release
+[submodule "repos/python-buildpack-release"]
+	path = repos/python-buildpack-release
+	url = https://github.com/cloudfoundry/python-buildpack-release
+[submodule "repos/ruby-buildpack-release"]
+	path = repos/ruby-buildpack-release
+	url = https://github.com/cloudfoundry/ruby-buildpack-release
+[submodule "repos/staticfile-buildpack-release"]
+	path = repos/staticfile-buildpack-release
+	url = https://github.com/cloudfoundry/staticfile-buildpack-release
+[submodule "repos/logsearch-boshrelease"]
+	path = repos/logsearch-boshrelease
+	url = https://github.com/cloudfoundry-community/logsearch-boshrelease
+[submodule "repos/paas-haproxy-release"]
+	path = repos/paas-haproxy-release
+	url = https://github.com/alphagov/paas-haproxy-release
+[submodule "repos/paas-datadog-for-cloudfoundry-boshrelease"]
+	path = repos/paas-datadog-for-cloudfoundry-boshrelease
+	url = https://github.com/alphagov/paas-datadog-for-cloudfoundry-boshrelease
+[submodule "repos/paas-ipsec-release"]
+	path = repos/paas-ipsec-release
+	url = https://github.com/alphagov/paas-ipsec-release
