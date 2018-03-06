@@ -82,6 +82,6 @@
 [submodule "repos/paas-cdn-broker-boshrelease"]
 	path = repos/paas-cdn-broker-boshrelease
 	url = https://github.com/alphagov/paas-cdn-broker-boshrelease
-[submodule "repos/paas-elasticache-broker"]
-	path = repos/paas-elasticache-broker
-	url = https://github.com/alphagov/paas-elasticache-broker
+[submodule "repos/paas-elasticache-broker-boshrelease"]
+	path = repos/paas-elasticache-broker-boshrelease
+	url = https://github.com/alphagov/paas-elasticache-broker-boshrelease

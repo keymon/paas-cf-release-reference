@@ -42,5 +42,5 @@ do_clone https://github.com/alphagov/paas-graphite-statsd-boshrelease gds_master
 do_clone https://github.com/alphagov/paas-grafana-boshrelease gds_master
 do_clone https://github.com/alphagov/paas-rds-broker-boshrelease master
 do_clone https://github.com/alphagov/paas-cdn-broker-boshrelease master
-do_clone https://github.com/alphagov/paas-elasticache-broker master
+do_clone https://github.com/alphagov/paas-elasticache-broker-boshrelease master
 
