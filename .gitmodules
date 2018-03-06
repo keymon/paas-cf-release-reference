@@ -70,3 +70,18 @@
 [submodule "paas-cf"]
 	path = paas-cf
 	url = https://github.com/alphagov/paas-cf/
+[submodule "repos/paas-graphite-statsd-boshrelease"]
+	path = repos/paas-graphite-statsd-boshrelease
+	url = https://github.com/alphagov/paas-graphite-statsd-boshrelease
+[submodule "repos/paas-grafana-boshrelease"]
+	path = repos/paas-grafana-boshrelease
+	url = https://github.com/alphagov/paas-grafana-boshrelease
+[submodule "repos/paas-rds-broker-boshrelease"]
+	path = repos/paas-rds-broker-boshrelease
+	url = https://github.com/alphagov/paas-rds-broker-boshrelease
+[submodule "repos/paas-cdn-broker-boshrelease"]
+	path = repos/paas-cdn-broker-boshrelease
+	url = https://github.com/alphagov/paas-cdn-broker-boshrelease
+[submodule "repos/paas-elasticache-broker"]
+	path = repos/paas-elasticache-broker
+	url = https://github.com/alphagov/paas-elasticache-broker

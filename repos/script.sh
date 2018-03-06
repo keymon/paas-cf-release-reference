@@ -38,3 +38,9 @@ do_clone https://github.com/alphagov/paas-haproxy-release master
 do_clone https://github.com/alphagov/paas-datadog-for-cloudfoundry-boshrelease master
 do_clone https://github.com/alphagov/paas-ipsec-release master
 
+do_clone https://github.com/alphagov/paas-graphite-statsd-boshrelease gds_master
+do_clone https://github.com/alphagov/paas-grafana-boshrelease gds_master
+do_clone https://github.com/alphagov/paas-rds-broker-boshrelease master
+do_clone https://github.com/alphagov/paas-cdn-broker-boshrelease master
+do_clone https://github.com/alphagov/paas-elasticache-broker master
+
