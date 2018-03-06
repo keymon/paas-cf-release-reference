@@ -85,3 +85,6 @@
 [submodule "repos/paas-elasticache-broker-boshrelease"]
 	path = repos/paas-elasticache-broker-boshrelease
 	url = https://github.com/alphagov/paas-elasticache-broker-boshrelease
+[submodule "repos/paas-logsearch-for-cloudfoundry"]
+	path = repos/paas-logsearch-for-cloudfoundry
+	url = https://github.com/alphagov/paas-logsearch-for-cloudfoundry

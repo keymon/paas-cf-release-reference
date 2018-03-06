@@ -36,6 +36,7 @@ do_clone https://github.com/cloudfoundry-community/logsearch-boshrelease v205.0.
 
 do_clone https://github.com/alphagov/paas-haproxy-release master
 do_clone https://github.com/alphagov/paas-datadog-for-cloudfoundry-boshrelease master
+do_clone https://github.com/alphagov/paas-logsearch-for-cloudfoundry gds_master
 do_clone https://github.com/alphagov/paas-ipsec-release master
 
 do_clone https://github.com/alphagov/paas-graphite-statsd-boshrelease gds_master
