@@ -67,3 +67,6 @@
 [submodule "repos/paas-ipsec-release"]
 	path = repos/paas-ipsec-release
 	url = https://github.com/alphagov/paas-ipsec-release
+[submodule "paas-cf"]
+	path = paas-cf
+	url = https://github.com/alphagov/paas-cf/
