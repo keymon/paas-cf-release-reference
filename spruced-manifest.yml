@@ -1,0 +1,2741 @@
+instance_groups:
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 3
+  jobs:
+  - consumes:
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - name: datadog-consul-agent-server
+    release: datadog-for-cloudfoundry
+  - name: datadog-consul-agent-client
+    release: datadog-for-cloudfoundry
+  - name: metron_agent
+    release: loggregator
+  name: consul
+  networks:
+  - name: cf
+    static_ips: ((consul_static_ips))
+  persistent_disk_type: consul
+  properties:
+    consul:
+      agent:
+        mode: server
+  stemcell: default
+  update:
+    serial: true
+  vm_type: small
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - consumes:
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - name: datadog-consul-agent-client
+    release: datadog-for-cloudfoundry
+  - consumes:
+      nats: nil
+    name: nats
+    release: nats
+  - name: datadog-nats
+    release: datadog-for-cloudfoundry
+  - name: metron_agent
+    release: loggregator
+  name: nats
+  networks:
+  - name: cf
+    static_ips: ((nats_static_ips))
+  stemcell: default
+  vm_type: medium
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 3
+  jobs:
+  - consumes:
+      consul: nil
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - name: metron_agent
+    release: loggregator
+  - name: adapter
+    release: cf-syslog-drain
+  name: adapter
+  networks:
+  - name: cf
+  properties:
+    scalablesyslog:
+      adapter:
+        logs:
+          addr: reverse-log-proxy.service.cf.internal:8082
+        tls:
+          ca: ((certs_bosh_ca_cert))
+          cert: ((certs_scalablesyslog_adapter_cert))
+          cn: scalablesyslog_adapter
+          key: ((certs_scalablesyslog_adapter_key))
+      adapter_rlp:
+        tls:
+          ca: ((certs_bosh_ca_cert))
+          cert: ((certs_reverse_log_proxy_cert))
+          cn: reverse_log_proxy
+          key: ((certs_reverse_log_proxy_key))
+  stemcell: default
+  vm_type: small
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - consumes:
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - name: datadog-consul-agent-client
+    release: datadog-for-cloudfoundry
+  - name: datadog-bbs
+    properties:
+      bbs:
+        ca_cert: /var/vcap/jobs/cfdot/config/certs/cfdot/ca.crt
+        client_cert: /var/vcap/jobs/cfdot/config/certs/cfdot/client.crt
+        client_key: /var/vcap/jobs/cfdot/config/certs/cfdot/client.key
+        url: https://bbs.service.cf.internal:8889/v1/actual_lrp_groups/list
+    release: datadog-for-cloudfoundry
+  - name: bbs
+    release: diego
+  - name: cfdot
+    release: diego
+  - name: metron_agent
+    release: loggregator
+  migrated_from:
+  - name: database
+  name: diego-api
+  networks:
+  - name: cf
+  stemcell: default
+  update:
+    serial: true
+  vm_extensions:
+  - cf_rds_client_sg
+  vm_type: medium
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - consumes:
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - name: datadog-consul-agent-client
+    release: datadog-for-cloudfoundry
+  - name: uaa
+    release: uaa
+  - name: metron_agent
+    release: loggregator
+  - name: statsd_injector
+    release: statsd-injector
+  - name: route_registrar
+    release: routing
+  name: uaa
+  networks:
+  - name: cf
+  properties:
+    consul:
+      agent:
+        services:
+          uaa: {}
+    route_registrar:
+      routes:
+      - health_check:
+          name: cf_uaa_health_check
+          script_path: /var/vcap/jobs/uaa/bin/health_check
+          timeout: 5s
+        name: uaa
+        port: 8081
+        registration_interval: 10s
+        server_cert_domain_san: uaa.service.cf.internal
+        tags:
+          component: uaa
+        tls_port: 8443
+        uris:
+        - uaa.((system_domain))
+        - login.((system_domain))
+    ssl_chained_cert: ((certs_uaa_internal_cert))
+    ssl_key: ((certs_uaa_internal_key))
+  stemcell: default
+  vm_extensions:
+  - cf_rds_client_sg
+  vm_type: medium
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - consumes:
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - consumes:
+      nats: nil
+    name: cloud_controller_ng
+    release: capi
+  - name: metron_agent
+    release: loggregator
+  - name: statsd_injector
+    release: statsd-injector
+  - name: file_server
+    release: diego
+  - name: cc_uploader
+    release: capi
+  - name: java-buildpack
+    release: java-buildpack
+  - name: go-buildpack
+    release: go-buildpack
+  - name: binary-buildpack
+    release: binary-buildpack
+  - name: nodejs-buildpack
+    release: nodejs-buildpack
+  - name: ruby-buildpack
+    release: ruby-buildpack
+  - name: php-buildpack
+    release: php-buildpack
+  - name: python-buildpack
+    release: python-buildpack
+  - name: staticfile-buildpack
+    release: staticfile-buildpack
+  - name: datadog-consul-agent-client
+    release: datadog-for-cloudfoundry
+  - name: datadog-cc
+    release: datadog-for-cloudfoundry
+  name: api
+  networks:
+  - name: cf
+  properties:
+    consul:
+      agent:
+        services:
+          cloud_controller_ng: {}
+    max_in_flight: 1
+  stemcell: default
+  vm_extensions:
+  - 64g_ephemeral_disk
+  - cf_cc_instance_profile
+  - cf_cc_security_groups
+  - cf_cc_elb
+  vm_type: large
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - consumes:
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - consumes:
+      nats: nil
+    name: cloud_controller_worker
+    release: capi
+  - name: metron_agent
+    release: loggregator
+  - name: datadog-consul-agent-client
+    release: datadog-for-cloudfoundry
+  - name: datadog-cc-worker
+    release: datadog-for-cloudfoundry
+  migrated_from:
+  - name: api_worker
+  name: cc-worker
+  networks:
+  - name: cf
+  stemcell: default
+  vm_extensions:
+  - 64g_ephemeral_disk
+  - cf_cc_instance_profile
+  - cf_cc_security_groups
+  vm_type: medium
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - consumes:
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - name: datadog-consul-agent-client
+    release: datadog-for-cloudfoundry
+  - consumes:
+      nats: nil
+    name: gorouter
+    release: routing
+  - name: metron_agent
+    release: loggregator
+  - name: haproxy
+    release: paas-haproxy
+  - name: datadog-router
+    release: datadog-for-cloudfoundry
+  - name: racoon
+    release: ipsec
+  - name: datadog-ipsec
+    release: datadog-for-cloudfoundry
+  name: router
+  networks:
+  - name: router
+  properties:
+    consul:
+      agent:
+        services:
+          gorouter: {}
+    racoon:
+      ports:
+      - name: router
+        targets: ((terraform_outputs_cell_subnet_cidr_blocks))
+  stemcell: default
+  update:
+    serial: true
+  vm_type: router
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 3
+  jobs:
+  - consumes:
+      consul: nil
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - name: metron_agent
+    release: loggregator
+  - name: cfdot
+    release: diego
+  - name: auctioneer
+    release: diego
+  - name: cloud_controller_clock
+    release: capi
+  - name: statsd_injector
+    release: statsd-injector
+  - name: tps
+    release: capi
+  - name: ssh_proxy
+    release: diego
+  - name: scheduler
+    release: cf-syslog-drain
+  name: scheduler
+  networks:
+  - name: cf
+  properties:
+    scalablesyslog:
+      scheduler:
+        api:
+          url: https://cloud-controller-ng.service.cf.internal:9023
+        tls:
+          api:
+            ca: ((certs_bosh_ca_cert))
+            cert: ((certs_scalablesyslog_adapter_scheduler_api_cert))
+            cn: cloud-controller-ng.service.cf.internal
+            key: ((certs_scalablesyslog_adapter_scheduler_api_key))
+          client:
+            adapter_cn: scalablesyslog_adapter
+            ca: ((certs_bosh_ca_cert))
+            cert: ((certs_scalablesyslog_adapter_scheduler_client_cert))
+            key: ((certs_scalablesyslog_adapter_scheduler_client_key))
+  stemcell: default
+  update:
+    serial: true
+  vm_extensions:
+  - ssh_proxy_elb
+  - cf_rds_client_sg
+  vm_type: medium
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 3
+  jobs:
+  - consumes:
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - name: datadog-consul-agent-client
+    release: datadog-for-cloudfoundry
+  - name: doppler
+    provides:
+      doppler:
+        as: doppler
+    release: loggregator
+  - name: metron_agent
+    release: loggregator
+  name: doppler
+  networks:
+  - name: cf
+  properties:
+    consul:
+      agent:
+        services:
+          doppler: {}
+  stemcell: default
+  vm_type: medium
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: ((cell_instances))
+  jobs:
+  - consumes:
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - name: datadog-consul-agent-client
+    release: datadog-for-cloudfoundry
+  - name: rep
+    release: diego
+  - name: garden
+    release: garden-runc
+  - name: cflinuxfs2-rootfs-setup
+    release: cflinuxfs2
+  - name: cfdot
+    release: diego
+  - name: metron_agent
+    release: loggregator
+  - name: route_emitter
+    properties:
+      diego:
+        route_emitter:
+          bbs:
+            api_location: bbs.service.cf.internal:8889
+            ca_cert: ((certs_bosh_ca_cert))
+            client_cert: ((certs_bbs_client_cert))
+            client_key: ((certs_bbs_client_key))
+            require_ssl: true
+          dropsonde_port: ((dropsonde_incoming_port))
+          local_mode: true
+          nats:
+            machines: ((nats_static_ips))
+            password: ((secrets_nats_password))
+            port: ((nats_port))
+            user: nats_user
+    release: diego
+  - name: datadog-route-emitter
+    release: datadog-for-cloudfoundry
+  - name: datadog-rep
+    release: datadog-for-cloudfoundry
+  - name: datadog-garden
+    release: datadog-for-cloudfoundry
+  - name: racoon
+    release: ipsec
+  - name: datadog-ipsec
+    release: datadog-for-cloudfoundry
+  migrated_from:
+  - name: cell
+  name: diego-cell
+  networks:
+  - name: cell
+  properties:
+    racoon:
+      ports:
+      - name: cell
+        targets: ((terraform_outputs_router_subnet_cidr_blocks))
+    tls:
+      ca_cert: ((certs_bosh_ca_cert))
+      cert: ((certs_cc_client_cert))
+      key: ((certs_cc_client_key))
+  stemcell: default
+  vm_type: cell
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - consumes:
+      consul_client: nil
+      consul_common: nil
+      consul_server: nil
+    name: consul_agent
+    release: consul
+  - name: datadog-consul-agent-client
+    release: datadog-for-cloudfoundry
+  - consumes:
+      doppler:
+        from: doppler
+    name: loggregator_trafficcontroller
+    release: loggregator
+  - name: metron_agent
+    release: loggregator
+  - name: reverse_log_proxy
+    release: loggregator
+  migrated_from:
+  - name: loggregator_trafficcontroller
+  name: log-api
+  networks:
+  - name: cf
+  properties:
+    consul:
+      agent:
+        services:
+          loggregator_trafficcontroller: {}
+          reverse_log_proxy: {}
+    loggregator:
+      reverse_log_proxy:
+        egress:
+          port: 8082
+      uaa:
+        client_secret: ((secrets_uaa_clients_doppler_secret))
+  provides:
+    reverse_log_proxy:
+      as: reverse_log_proxy
+      shared: true
+  stemcell: default
+  update:
+    serial: true
+  vm_extensions:
+  - cf_doppler_elbs
+  vm_type: medium
+- azs:
+  - z1
+  instances: 1
+  jobs:
+  - name: carbon
+    release: graphite
+  - name: graphite-web
+    release: graphite
+  - name: statsd
+    release: graphite
+  - name: grafana
+    release: grafana
+  name: graphite
+  networks:
+  - name: cf
+    static_ips:
+    - 10.0.16.20
+  persistent_disk_type: graphite_data
+  properties:
+    carbon:
+      cache:
+        max_creates_per_minute: 500
+      filter:
+        blacklist:
+        - stats\.counters\.cfstats\.router_.+\.[0-9]+\.http\..+\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*
+        enable: true
+      prune_delay: 10
+      storage_aggregations:
+      - aggregationMethod: average
+        name: catch_all
+        pattern: ^.*$
+        xFilesFactor: "0.5"
+      storage_schemas:
+      - name: catch_all
+        pattern: ^.*$
+        retentions: 10s:1d,1m:7d,15m:30d,1h:1y,1d:5y
+    grafana:
+      admin_password: ((secrets_grafana_admin_password))
+      admin_username: admin
+      datasources:
+      - name: graphite
+        type: graphite
+        url: http://localhost:3001
+      root_url: /
+    graphite-web:
+      httpd:
+        port: 3001
+      time_zone: Europe/London
+      wsgi:
+        inactivity-timeout: 60
+    statsd:
+      deleteIdleStats: true
+  stemcell: default
+  vm_type: graphite
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - name: rds-broker
+    release: rds-broker
+  name: rds_broker
+  networks:
+  - name: cf
+  properties:
+    rds-broker:
+      allow_user_provision_parameters: true
+      allow_user_update_parameters: true
+      aws_access_key_id: ""
+      aws_region: eu-west-1
+      aws_secret_access_key: ""
+      broker_name: ((terraform_outputs_environment))
+      catalog:
+        services:
+        - bindable: true
+          description: AWS RDS PostgreSQL service
+          id: ce71b484-d542-40f7-9dd4-5526e38c81ba
+          metadata:
+            displayName: AWS RDS Postgres
+            documentationUrl: https://aws.amazon.com/documentation/rds/
+            imageUrl: ""
+            longDescription: AWS RDS postgres service
+            providerDisplayName: Amazon Web Services
+            supportUrl: https://forums.aws.amazon.com/forum.jspa?forumID=60
+          name: postgres
+          plan_updateable: true
+          plans:
+          - description: '5GB Storage, NOT BACKED UP, Dedicated Instance, Max 50 Concurrent
+              Connections. Postgres Version 9.5. DB Instance Class: db.t2.micro.'
+            free: true
+            id: 5f2eec8a-0cad-4ab9-b81e-d6adade2fd42
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - AWS RDS
+            name: Free
+            rds_properties:
+              allocated_storage: 5
+              auto_minor_version_upgrade: true
+              backup_retention_period: 0
+              copy_tags_to_snapshot: true
+              db_instance_class: db.t2.micro
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: false
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: true
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '20GB Storage, Dedicated Instance, Max 200 Concurrent Connections.
+              Postgres Version 9.5. DB Instance Class: db.t2.small.'
+            free: false
+            id: b7d0a368-ac92-4eff-9b8d-ab4ba45bed0e
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.039
+                unit: HOUR
+            name: S-dedicated-9.5
+            rds_properties:
+              allocated_storage: 20
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.t2.small
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: false
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '20GB Storage, Dedicated Instance, Highly Available, Max
+              200 Concurrent Connections. Postgres Version 9.5. DB Instance Class:
+              db.t2.small.'
+            free: false
+            id: 359bcb39-0264-46bd-9120-0182c3829067
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.078
+                unit: HOUR
+            name: S-HA-dedicated-9.5
+            rds_properties:
+              allocated_storage: 20
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.t2.small
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: true
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '20GB Storage, Dedicated Instance, Highly Available, Storage
+              Encrypted, Max 200 Concurrent Connections. Postgres Version 9.5. DB
+              Instance Class: db.t2.small.'
+            free: false
+            id: d9f1d61d-0a65-45ad-8fc9-88c921d038d2
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.078
+                unit: HOUR
+            name: S-HA-enc-dedicated-9.5
+            rds_properties:
+              allocated_storage: 20
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.t2.small
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: true
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: true
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '100GB Storage, Dedicated Instance, Max 500 Concurrent Connections.
+              Postgres Version 9.5. DB Instance Class: db.m4.large.'
+            free: false
+            id: 9b882524-ab58-4c18-b501-d2a3f4619104
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.201
+                unit: HOUR
+            name: M-dedicated-9.5
+            rds_properties:
+              allocated_storage: 100
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.large
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: false
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '100GB Storage, Dedicated Instance, Highly Available, Max
+              500 Concurrent Connections. Postgres Version 9.5. DB Instance Class:
+              db.m4.large.'
+            free: false
+            id: bf5b99c2-7990-4b66-b341-1bb83566d76e
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.402
+                unit: HOUR
+            name: M-HA-dedicated-9.5
+            rds_properties:
+              allocated_storage: 100
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.large
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: true
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '100GB Storage, Dedicated Instance, Highly Available, Storage
+              Encrypted, Max 500 Concurrent Connections. Postgres Version 9.5. DB
+              Instance Class: db.m4.large.'
+            free: false
+            id: 8d50ccc5-707c-4306-be8f-f59a158eb736
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - Storage Encrypted
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.402
+                unit: HOUR
+            name: M-HA-enc-dedicated-9.5
+            rds_properties:
+              allocated_storage: 100
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.large
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: true
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: true
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '512GB Storage, Dedicated Instance, Max 5000 Concurrent Connections.
+              Postgres Version 9.5. DB Instance Class: db.m4.2xlarge.'
+            free: false
+            id: 238a1328-4f77-4b70-9bd9-2cdbbfb999c8
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.806
+                unit: HOUR
+            name: L-dedicated-9.5
+            rds_properties:
+              allocated_storage: 512
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.2xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: false
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '512GB Storage, Dedicated Instance, Highly Available, Max
+              5000 Concurrent Connections. Postgres Version 9.5. DB Instance Class:
+              db.m4.2xlarge.'
+            free: false
+            id: dfe4ab2b-2069-41a5-ba08-2be21b0c76d3
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 1.612
+                unit: HOUR
+            name: L-HA-dedicated-9.5
+            rds_properties:
+              allocated_storage: 512
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.2xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: true
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '512GB Storage, Dedicated Instance, Highly Available, Storage
+              Encrypted, Max 5000 Concurrent Connections. Postgres Version 9.5. DB
+              Instance Class: db.m4.2xlarge.'
+            free: false
+            id: 620055b3-fe7c-46fc-87ad-c7d8f4fe7f34
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - Storage Encrypted
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 1.612
+                unit: HOUR
+            name: L-HA-enc-dedicated-9.5
+            rds_properties:
+              allocated_storage: 512
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.2xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: true
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: true
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '2TB Storage, Dedicated Instance, Max 5000 Concurrent Connections.
+              Postgres Version 9.5. DB Instance Class: db.m4.4xlarge.'
+            free: false
+            id: 1065c353-54dd-4f6b-a5b4-a4b5aa4575c6
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 1.612
+                unit: HOUR
+            name: XL-dedicated-9.5
+            rds_properties:
+              allocated_storage: 2048
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.4xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: false
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '2TB Storage, Dedicated Instance, Highly Available, Max 5000
+              Concurrent Connections. Postgres Version 9.5. DB Instance Class: db.m4.4xlarge.'
+            free: false
+            id: 7119925f-518d-4263-96ac-16990295aad6
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 3.224
+                unit: HOUR
+            name: XL-HA-dedicated-9.5
+            rds_properties:
+              allocated_storage: 2048
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.4xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: true
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '2TB Storage, Dedicated Instance, Highly Available, Storage
+              Encrypted, Max 5000 Concurrent Connections. Postgres Version 9.5. DB
+              Instance Class: db.m4.4xlarge.'
+            free: false
+            id: a91c8e59-8869-42fd-8a99-8989151d7353
+            metadata:
+              bullets:
+              - Dedicated Postgres 9.5 server
+              - Storage Encrypted
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 3.224
+                unit: HOUR
+            name: XL-HA-enc-dedicated-9.5
+            rds_properties:
+              allocated_storage: 2048
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.4xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: postgres
+              engine_version: "9.5"
+              multi_az: true
+              postgres_extensions:
+              - uuid-ossp
+              - postgis
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: true
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          tags:
+          - postgres
+          - relational
+        - bindable: true
+          description: AWS RDS MySQL service
+          id: 4b888513-1dc3-4b9b-bdcd-51f4c03675a4
+          metadata:
+            displayName: AWS RDS MySQL
+            documentationUrl: https://aws.amazon.com/documentation/rds/
+            imageUrl: ""
+            longDescription: AWS RDS MySQL service
+            providerDisplayName: Amazon Web Services
+            supportUrl: https://forums.aws.amazon.com/forum.jspa?forumID=60
+          name: mysql
+          plan_updateable: true
+          plans:
+          - description: '5GB Storage, NOT BACKED UP, Dedicated Instance. MySQL Version
+              5.7. DB Instance Class: db.t2.micro.'
+            free: true
+            id: 69977068-8ef5-4172-bfdb-e8cea3c14d01
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - AWS RDS
+            name: Free
+            rds_properties:
+              allocated_storage: 5
+              auto_minor_version_upgrade: true
+              backup_retention_period: 0
+              copy_tags_to_snapshot: true
+              db_instance_class: db.t2.micro
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: false
+              publicly_accessible: false
+              skip_final_snapshot: true
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '20GB Storage, Dedicated Instance. MySQL Version 5.7. DB
+              Instance Class: db.t2.small.'
+            free: false
+            id: 7fdde6ea-cc27-466c-86aa-46181fc20d25
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.036
+                unit: HOUR
+            name: S-dedicated-5.7
+            rds_properties:
+              allocated_storage: 20
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.t2.small
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: false
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '20GB Storage, Dedicated Instance, Highly Available. MySQL
+              Version 5.7. DB Instance Class: db.t2.small.'
+            free: false
+            id: 72279ebd-6001-4e38-aaef-72b68c4fa6fd
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.072
+                unit: HOUR
+            name: S-HA-dedicated-5.7
+            rds_properties:
+              allocated_storage: 20
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.t2.small
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: true
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '20GB Storage, Dedicated Instance, Highly Available. Storage
+              Encrypted. MySQL Version 5.7. DB Instance Class: db.t2.small.'
+            free: false
+            id: 6aa563c1-5aeb-46a1-9509-badcf5995c96
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.072
+                unit: HOUR
+            name: S-HA-enc-dedicated-5.7
+            rds_properties:
+              allocated_storage: 20
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.t2.small
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: true
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: true
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '100GB Storage, Dedicated Instance. MySQL Version 5.7. DB
+              Instance Class: db.m4.large.'
+            free: false
+            id: 4eb35ca9-a7ec-46c6-b137-d819848536cd
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.193
+                unit: HOUR
+            name: M-dedicated-5.7
+            rds_properties:
+              allocated_storage: 100
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.large
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: false
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '100GB Storage, Dedicated Instance, Highly Available. MySQL
+              Version 5.7. DB Instance Class: db.m4.large.'
+            free: false
+            id: e60edf62-b701-4e38-846f-b0b3db728349
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.386
+                unit: HOUR
+            name: M-HA-dedicated-5.7
+            rds_properties:
+              allocated_storage: 100
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.large
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: true
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '100GB Storage, Dedicated Instance, Highly Available, Storage
+              Encrypted. MySQL Version 5.7. DB Instance Class: db.m4.large.'
+            free: false
+            id: 8d139b9e-bc82-4749-8ad6-7733980292d6
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - Storage Encrypted
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.386
+                unit: HOUR
+            name: M-HA-enc-dedicated-5.7
+            rds_properties:
+              allocated_storage: 100
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.large
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: true
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: true
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '512GB Storage, Dedicated Instance. MySQL Version 5.7. DB
+              Instance Class: db.m4.2xlarge.'
+            free: false
+            id: 6725bf1f-71e8-447a-b6a1-659247fcc03c
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 0.772
+                unit: HOUR
+            name: L-dedicated-5.7
+            rds_properties:
+              allocated_storage: 512
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.2xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: false
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '512GB Storage, Dedicated Instance, Highly Available. MySQL
+              Version 5.7. DB Instance Class: db.m4.2xlarge.'
+            free: false
+            id: 63cdac92-9e44-42a6-ba3f-7be3dccf5dc6
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 1.544
+                unit: HOUR
+            name: L-HA-dedicated-5.7
+            rds_properties:
+              allocated_storage: 512
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.2xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: true
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '512GB Storage, Dedicated Instance, Highly Available, Storage
+              Encrypted. MySQL Version 5.7. DB Instance Class: db.m4.2xlarge.'
+            free: false
+            id: d5efbf83-5e00-47a5-a668-2ef1307d5a23
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - Storage Encrypted
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 1.544
+                unit: HOUR
+            name: L-HA-enc-dedicated-5.7
+            rds_properties:
+              allocated_storage: 512
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.2xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: true
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: true
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '2TB Storage, Dedicated Instance. MySQL Version 5.7. DB Instance
+              Class: db.m4.4xlarge.'
+            free: false
+            id: a37144bf-4e05-451b-87ba-0a2c57a23a91
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 1.545
+                unit: HOUR
+            name: XL-dedicated-5.7
+            rds_properties:
+              allocated_storage: 2048
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.4xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: false
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '2TB Storage, Dedicated Instance, Highly Available. MySQL
+              Version 5.7. DB Instance Class: db.m4.4xlarge.'
+            free: false
+            id: 065a7de5-28e8-4de1-8a39-4b4f752e2f2f
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 3.09
+                unit: HOUR
+            name: XL-HA-dedicated-5.7
+            rds_properties:
+              allocated_storage: 2048
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.4xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: true
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: false
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          - description: '2TB Storage, Dedicated Instance, Highly Available, Storage
+              Encrypted. MySQL Version 5.7. DB Instance Class: db.m4.4xlarge.'
+            free: false
+            id: 4edc975c-3f07-46f1-bd87-ecb35b76298f
+            metadata:
+              bullets:
+              - Dedicated MySQL 5.7 server
+              - Storage Encrypted
+              - AWS RDS
+              costs:
+              - amount:
+                  usd: 3.09
+                unit: HOUR
+            name: XL-HA-enc-dedicated-5.7
+            rds_properties:
+              allocated_storage: 2048
+              auto_minor_version_upgrade: true
+              backup_retention_period: 7
+              copy_tags_to_snapshot: true
+              db_instance_class: db.m4.4xlarge
+              db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+              db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+              engine: mysql
+              engine_version: "5.7"
+              multi_az: true
+              publicly_accessible: false
+              skip_final_snapshot: false
+              storage_encrypted: true
+              storage_type: gp2
+              vpc_security_group_ids:
+              - ((terraform_outputs_rds_broker_dbs_security_group_id))
+          tags:
+          - mysql
+          - relational
+      db_prefix: rdsbroker
+      master_password_seed: ((secrets_rds_broker_master_password_seed))
+      password: ((secrets_rds_broker_admin_password))
+      state_encryption_key: ((secrets_rds_broker_state_encryption_key))
+  stemcell: default
+  vm_type: rds_broker
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - name: cdn-broker
+    release: cdn-broker
+  - name: cdn-cron
+    release: cdn-broker
+  - name: datadog-cdn-broker
+    release: datadog-for-cloudfoundry
+  name: cdn_broker
+  networks:
+  - name: cf
+  properties:
+    cdn-broker:
+      acme_url: https://acme-v01.api.letsencrypt.org/directory
+      api_address: https://api.((terraform_outputs_cf_root_domain))
+      aws_access_key_id: ""
+      aws_default_region: eu-west-1
+      aws_secret_access_key: ""
+      broker_password: ((secrets_cdn_broker_admin_password))
+      broker_username: cdn-broker
+      bucket: gds-paas-((environment))-cdn-broker-challenge
+      client_id: cdn_broker
+      client_secret: ((secrets_uaa_clients_cdn_broker_secret))
+      cloudfront_prefix: ((environment))-cdn
+      database_url: ((terraform_outputs_cdn_db_connection_string))
+      default_origin: ((terraform_outputs_cf_apps_domain))
+      email: the-multi-cloud-paas-team@digital.cabinet-office.gov.uk
+      iam_path_prefix: ((environment))-letsencrypt
+  stemcell: default
+  vm_type: cdn_broker
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - name: elasticache-broker
+    release: elasticache-broker
+  name: elasticache_broker
+  networks:
+  - name: cf
+  properties:
+    elasticache-broker:
+      auth_token_seed: ((secrets_elasticache_broker_auth_token_seed))
+      broker_name: elasticache-broker
+      broker_password: ((secrets_elasticache_broker_admin_password))
+      broker_username: elasticache-broker
+      cache_subnet_group_name: ((terraform_outputs_elasticache_broker_subnet_group_name))
+      catalog:
+        services:
+        - bindable: true
+          description: AWS ElastiCache Redis service
+          id: 7b94ab02-478f-4c1b-95d8-21522672930b
+          metadata:
+            displayName: Redis
+            documentationUrl: https://docs.cloud.service.gov.uk/#redis
+            imageUrl: https://redis.io/images/redis-white.png
+            longDescription: AWS ElastiCache Redis cluster
+            providerDisplayName: GOV.UK PaaS
+            supportUrl: https://www.cloud.service.gov.uk/support.html
+          name: redis
+          plan_updateable: true
+          plans:
+          - description: 568MB RAM, 1 shard, single node, no failover
+            free: true
+            id: 3a51701c-eef3-447c-882b-907ad2bcb7ab
+            metadata:
+              displayName: Redis Tiny
+            name: tiny
+          tags:
+          - elasticache
+          - redis
+      plan_configs:
+        3a51701c-eef3-447c-882b-907ad2bcb7ab:
+          instance_type: cache.t2.micro
+          parameters:
+            maxmemory-policy: volatile-lru
+            reserved-memory: "0"
+          replicas_per_node_group: 0
+          shard_count: 1
+          snapshot_retention_limit: 7
+      region: eu-west-1
+      vpc_security_group_ids:
+      - ((terraform_outputs_elasticache_broker_instances_security_group_id))
+  stemcell: default
+  vm_type: elasticache_broker
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - name: queue
+    release: logsearch
+  - name: datadog-logsearch-queue
+    release: datadog-for-cloudfoundry
+  name: queue
+  networks:
+  - name: cf
+    static_ips: ((queue_static_ips))
+  persistent_disk_type: queue
+  release: logsearch
+  stemcell: default
+  vm_type: small
+- azs:
+  - z1
+  instances: 1
+  jobs:
+  - name: parser
+    release: logsearch
+  - name: parser-config-lfc
+    release: logsearch-for-cloudfoundry
+  name: parser_z1
+  networks:
+  - name: cf
+    static_ips:
+    - 10.0.16.14
+  properties:
+    logstash_parser:
+      elasticsearch:
+        data_hosts:
+        - ((terraform_outputs_logsearch_elastic_master_elb_dns_name))
+    redis:
+      host: ((queue_static_ips_first))
+  release: logsearch
+  stemcell: default
+  vm_type: parser
+- azs:
+  - z2
+  instances: 1
+  jobs:
+  - name: parser
+    release: logsearch
+  - name: parser-config-lfc
+    release: logsearch-for-cloudfoundry
+  name: parser_z2
+  networks:
+  - name: cf
+    static_ips:
+    - 10.0.17.14
+  properties:
+    logstash_parser:
+      elasticsearch:
+        data_hosts:
+        - ((terraform_outputs_logsearch_elastic_master_elb_dns_name))
+    redis:
+      host: ((queue_static_ips_second))
+  release: logsearch
+  stemcell: default
+  vm_type: parser
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 3
+  jobs:
+  - name: elasticsearch
+    release: logsearch
+  name: elasticsearch_master
+  networks:
+  - name: cf
+    static_ips: ((elasticsearch_master_static_ips))
+  persistent_disk_type: elasticsearch_master
+  properties:
+    elasticsearch:
+      discovery:
+        minimum_master_nodes: 2
+      health:
+        disable_post_start: true
+      master_hosts: ((elasticsearch_master_static_ips))
+      node:
+        allow_data: true
+        allow_master: true
+  release: logsearch
+  stemcell: default
+  update:
+    canaries: 0
+    max_in_flight: 3
+    serial: true
+  vm_type: elasticsearch_master
+- azs:
+  - z1
+  - z2
+  instances: 1
+  jobs:
+  - name: elasticsearch_config
+    release: logsearch
+  - name: curator
+    release: logsearch
+  - name: elasticsearch-config-lfc
+    release: logsearch-for-cloudfoundry
+  name: maintenance
+  networks:
+  - name: cf
+  properties:
+    elasticsearch_config:
+      templates:
+      - shards-and-replicas: /var/vcap/jobs/elasticsearch_config/index-templates/shards-and-replicas.json
+      - index-settings: /var/vcap/jobs/elasticsearch_config/index-templates/index-settings.json
+      - index-mappings-lfc: /var/vcap/jobs/elasticsearch-config-lfc/index-mappings.json
+  release: logsearch
+  stemcell: default
+  vm_type: small
+- azs:
+  - z1
+  - z2
+  instances: 1
+  jobs:
+  - name: kibana
+    release: logsearch
+  - name: haproxy
+    release: logsearch
+  name: kibana
+  networks:
+  - name: cf
+  release: logsearch
+  stemcell: default
+  vm_type: kibana
+- azs:
+  - z1
+  instances: 1
+  jobs:
+  - name: ingestor_syslog
+    release: logsearch
+  name: ingestor_z1
+  networks:
+  - default:
+    - gateway
+    - dns
+    name: cf
+    static_ips:
+    - 10.0.16.12
+  properties:
+    redis:
+      host: ((queue_static_ips_first))
+  release: logsearch
+  stemcell: default
+  update:
+    serial: true
+  vm_type: ingestor
+- azs:
+  - z2
+  instances: 1
+  jobs:
+  - name: ingestor_syslog
+    release: logsearch
+  name: ingestor_z2
+  networks:
+  - default:
+    - gateway
+    - dns
+    name: cf
+    static_ips:
+    - 10.0.17.12
+  properties:
+    redis:
+      host: ((queue_static_ips_second))
+  release: logsearch
+  stemcell: default
+  update:
+    serial: true
+  vm_type: ingestor
+meta:
+  environment: ((terraform_outputs_environment))
+  rds_broker:
+    default_mysql_rds_properties:
+      auto_minor_version_upgrade: true
+      backup_retention_period: 7
+      copy_tags_to_snapshot: true
+      db_parameter_group_name: ((terraform_outputs_rds_broker_mysql57_db_parameter_group))
+      db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+      engine: mysql
+      engine_version: "5.7"
+      multi_az: false
+      publicly_accessible: false
+      skip_final_snapshot: false
+      storage_encrypted: false
+      storage_type: gp2
+      vpc_security_group_ids:
+      - ((terraform_outputs_rds_broker_dbs_security_group_id))
+    default_postgres_rds_properties:
+      auto_minor_version_upgrade: true
+      backup_retention_period: 7
+      copy_tags_to_snapshot: true
+      db_parameter_group_name: ((terraform_outputs_rds_broker_postgres95_db_parameter_group))
+      db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+      engine: postgres
+      engine_version: "9.5"
+      multi_az: false
+      postgres_extensions:
+      - uuid-ossp
+      - postgis
+      publicly_accessible: false
+      skip_final_snapshot: false
+      storage_encrypted: false
+      storage_type: gp2
+      vpc_security_group_ids:
+      - ((terraform_outputs_rds_broker_dbs_security_group_id))
+    default_rds_properties:
+      auto_minor_version_upgrade: true
+      backup_retention_period: 7
+      copy_tags_to_snapshot: true
+      db_subnet_group_name: ((terraform_outputs_rds_broker_dbs_subnet_group))
+      multi_az: false
+      publicly_accessible: false
+      skip_final_snapshot: false
+      storage_encrypted: false
+      storage_type: gp2
+      vpc_security_group_ids:
+      - ((terraform_outputs_rds_broker_dbs_security_group_id))
+    free_plan_rds_properties:
+      allocated_storage: 5
+      backup_retention_period: 0
+      db_instance_class: db.t2.micro
+      skip_final_snapshot: true
+    large_plan_rds_properties:
+      allocated_storage: 512
+      db_instance_class: db.m4.2xlarge
+    medium_plan_rds_properties:
+      allocated_storage: 100
+      db_instance_class: db.m4.large
+    small_plan_rds_properties:
+      allocated_storage: 20
+      db_instance_class: db.t2.small
+    xlarge_plan_rds_properties:
+      allocated_storage: 2048
+      db_instance_class: db.m4.4xlarge
+name: ((environment))
+properties:
+  acceptance_tests:
+    admin_password: ((secrets_uaa_admin_password))
+    admin_user: admin
+    api: api.((system_domain))
+    apps_domain: ((app_domain))
+    artifacts_directory: /tmp/artifacts
+    backend: diego
+    include_docker: true
+    include_internet_dependent: true
+    include_logging: true
+    include_operator: true
+    include_route_services: true
+    include_routing: true
+    include_security_groups: true
+    include_services: true
+    include_ssh: true
+    include_tasks: true
+    include_v3: false
+    include_zipkin: true
+    skip_diego_unsupported_tests: true
+    skip_ssl_validation: false
+    system_domain: ((system_domain))
+    test_password: ((secrets_test_user_password))
+    use_existing_user: false
+  app_domains:
+  - ((terraform_outputs_cf_apps_domain))
+  app_ssh:
+    host_key_fingerprint: ((secrets_ssh_proxy_host_key.public_fingerprint))
+  capi:
+    cc_uploader:
+      cc:
+        base_url: https://api.((system_domain))
+        basic_auth_password: ((secrets_bulk_api_password))
+        ca_cert: ((certs_bosh_ca_cert))
+        client_cert: ((certs_cc_client_cert))
+        client_key: ((certs_cc_client_key))
+        staging_upload_password: ((secrets_staging_upload_password))
+        staging_upload_user: staging_upload_user
+      dropsonde_port: ((dropsonde_incoming_port))
+      mutual_tls:
+        ca_cert: ((certs_bosh_ca_cert))
+        server_cert: ((certs_cc_uploader_server_cert))
+        server_key: ((certs_cc_uploader_server_key))
+    tps:
+      bbs:
+        api_location: bbs.service.cf.internal:8889
+        ca_cert: ((certs_bosh_ca_cert))
+        client_cert: ((certs_bbs_client_cert))
+        client_key: ((certs_bbs_client_key))
+        require_ssl: true
+      cc:
+        base_url: https://api.((system_domain))
+        ca_cert: ((certs_bosh_ca_cert))
+        client_cert: ((certs_cc_client_cert))
+        client_key: ((certs_cc_client_key))
+        staging_upload_password: ((secrets_staging_upload_password))
+        staging_upload_user: staging_upload_user
+      dropsonde_port: ((dropsonde_incoming_port))
+      listener_enabled: false
+      traffic_controller_url: wss://doppler.((system_domain)):443
+  cc:
+    allow_app_ssh_access: true
+    allowed_cors_domains: []
+    app_events:
+      cutoff_age_in_days: 31
+    app_usage_events:
+      cutoff_age_in_days: 45
+    audit_events:
+      cutoff_age_in_days: 31
+    broker_client_default_async_poll_interval_seconds: null
+    broker_client_max_async_poll_duration_minutes: 11520
+    broker_client_timeout_seconds: 70
+    buildpacks:
+      buildpack_directory_key: ((environment))-cf-buildpacks
+      cdn: null
+      fog_connection:
+        provider: AWS
+        region: ((terraform_outputs_region))
+        use_iam_profile: true
+    bulk_api_password: ((secrets_bulk_api_password))
+    client_max_body_size: 15M
+    db_encryption_key: ((secrets_cc_db_encryption_key))
+    db_logging_level: debug
+    default_app_disk_in_mb: 1024
+    default_app_memory: 1024
+    default_health_check_timeout: 60
+    default_quota_definition: default
+    default_running_security_groups:
+    - public_networks
+    - dns
+    - rds_broker_instances
+    - elasticache_broker_instances
+    default_staging_security_groups:
+    - public_networks
+    - dns
+    - rds_broker_instances
+    - elasticache_broker_instances
+    development_mode: false
+    directories: null
+    disable_custom_buildpacks: false
+    droplets:
+      cdn: null
+      droplet_directory_key: ((environment))-cf-droplets
+      fog_connection:
+        provider: AWS
+        region: ((terraform_outputs_region))
+        use_iam_profile: true
+      max_staged_droplets_stored: null
+    external_host: api
+    external_port: 9022
+    external_protocol: null
+    install_buildpacks:
+    - name: staticfile_buildpack
+      package: staticfile-buildpack
+    - name: java_buildpack
+      package: java-buildpack
+    - name: ruby_buildpack
+      package: ruby-buildpack
+    - name: nodejs_buildpack
+      package: nodejs-buildpack
+    - name: go_buildpack
+      package: go-buildpack
+    - name: python_buildpack
+      package: python-buildpack
+    - name: php_buildpack
+      package: php-buildpack
+    - name: binary_buildpack
+      package: binary-buildpack
+    internal_api_password: ((secrets_bulk_api_password))
+    internal_api_user: internal_user
+    internal_service_hostname: cloud-controller-ng.service.cf.internal
+    jobs:
+      app_bits_packer:
+        timeout_in_seconds: null
+      app_events_cleanup:
+        timeout_in_seconds: null
+      app_usage_events_cleanup:
+        timeout_in_seconds: null
+      blobstore_delete:
+        timeout_in_seconds: null
+      blobstore_upload:
+        timeout_in_seconds: null
+      droplet_deletion:
+        timeout_in_seconds: null
+      droplet_upload:
+        timeout_in_seconds: null
+      generic:
+        number_of_workers: null
+      global:
+        timeout_in_seconds: 14400
+    logging_level: info
+    maximum_app_disk_in_mb: 2048
+    maximum_health_check_timeout: 180
+    min_cli_version: null
+    min_recommended_cli_version: null
+    mutual_tls:
+      ca_cert: ((certs_bosh_ca_cert))
+      private_key: ((certs_cc_server_key))
+      public_cert: ((certs_cc_server_cert))
+    newrelic:
+      capture_params: false
+      developer_mode: false
+      environment_name: ((environment))
+      license_key: null
+      monitor_mode: false
+      transaction_tracer:
+        enabled: true
+        record_sql: obfuscated
+    packages:
+      app_package_directory_key: ((environment))-cf-packages
+      cdn: null
+      fog_connection:
+        provider: AWS
+        region: ((terraform_outputs_region))
+        use_iam_profile: true
+      max_package_size: 1073741824
+      max_valid_packages_stored: null
+    quota_definitions:
+      2xlarge:
+        memory_limit: 409600
+        non_basic_services_allowed: true
+        total_routes: 1000
+        total_services: 160
+      default:
+        memory_limit: 5120
+        non_basic_services_allowed: false
+        total_routes: 1000
+        total_services: 10
+      large:
+        memory_limit: 102400
+        non_basic_services_allowed: true
+        total_routes: 1000
+        total_services: 40
+      medium:
+        memory_limit: 61440
+        non_basic_services_allowed: true
+        total_routes: 1000
+        total_services: 20
+      small:
+        memory_limit: 10240
+        non_basic_services_allowed: true
+        total_routes: 1000
+        total_services: 10
+      test_apps:
+        memory_limit: 2048
+        non_basic_services_allowed: true
+        total_routes: 1000
+        total_services: 10
+      xlarge:
+        memory_limit: 204800
+        non_basic_services_allowed: true
+        total_routes: 1000
+        total_services: 80
+    resource_pool:
+      cdn: null
+      fog_connection:
+        provider: AWS
+        region: ((terraform_outputs_region))
+        use_iam_profile: true
+      resource_directory_key: ((environment))-cf-resources
+    security_group_definitions:
+    - name: public_networks
+      rules:
+      - destination: 0.0.0.0-9.255.255.255
+        protocol: all
+      - destination: 11.0.0.0-169.253.255.255
+        protocol: all
+      - destination: 169.255.0.0-172.15.255.255
+        protocol: all
+      - destination: 172.32.0.0-192.167.255.255
+        protocol: all
+      - destination: 192.169.0.0-255.255.255.255
+        protocol: all
+    - name: dns
+      rules:
+      - destination: 0.0.0.0/0
+        ports: "53"
+        protocol: tcp
+      - destination: 0.0.0.0/0
+        ports: "53"
+        protocol: udp
+    - name: rds_broker_instances
+      rules:
+      - destination: ((terraform_outputs_aws_backing_service_cidr_all))
+        ports: "5432"
+        protocol: tcp
+      - destination: ((terraform_outputs_aws_backing_service_cidr_all))
+        ports: "3306"
+        protocol: tcp
+    - name: elasticache_broker_instances
+      rules:
+      - destination: ((terraform_outputs_aws_backing_service_cidr_all))
+        ports: "6379"
+        protocol: tcp
+    service_usage_events:
+      cutoff_age_in_days: 45
+    srv_api_uri: https://api.((system_domain))
+    stacks: null
+    staging_upload_password: ((secrets_staging_upload_password))
+    staging_upload_user: staging_upload_user
+    thresholds:
+      api:
+        alert_if_above_mb: null
+        restart_if_above_mb: null
+        restart_if_consistently_above_mb: null
+      worker:
+        alert_if_above_mb: null
+        restart_if_above_mb: null
+        restart_if_consistently_above_mb: null
+    tls_port: 9023
+  ccdb:
+    address: ((terraform_outputs_cf_db_address))
+    databases:
+    - citext: true
+      name: api
+      tag: cc
+    db_scheme: postgres
+    port: 5432
+    roles:
+    - name: api
+      password: ((secrets_cf_db_api_password))
+      tag: admin
+  cflinuxfs2-rootfs:
+    trusted_certs: ((aws_rds_combined_ca_bundle))
+  consul:
+    agent:
+      dns_config:
+        allow_stale: true
+        max_stale: 30s
+      domain: cf.internal
+      log_level: null
+      servers:
+        lan: ((consul_static_ips))
+    agent_cert: ((certs_consul_agent_cert))
+    agent_key: ((certs_consul_agent_key))
+    ca_cert: ((certs_bosh_ca_cert))
+    encrypt_keys: ((secrets_consul_encrypt_keys))
+    server_cert: ((certs_consul_server_cert))
+    server_key: ((certs_consul_server_key))
+  curator:
+    elasticsearch:
+      host: ((terraform_outputs_logsearch_elastic_master_elb_dns_name))
+    purge_logs:
+      retention_period: 30
+  description: null
+  diego:
+    auctioneer:
+      bbs:
+        api_location: bbs.service.cf.internal:8889
+        ca_cert: ((certs_bosh_ca_cert))
+        client_cert: ((certs_bbs_client_cert))
+        client_key: ((certs_bbs_client_key))
+        require_ssl: true
+      ca_cert: ((certs_bosh_ca_cert))
+      dropsonde_port: ((dropsonde_incoming_port))
+      rep:
+        ca_cert: ((certs_bosh_ca_cert))
+        client_cert: ((certs_rep_client_cert))
+        client_key: ((certs_rep_client_key))
+        require_tls: true
+      server_cert: ((certs_auctioneer_server_cert))
+      server_key: ((certs_auctioneer_server_key))
+    bbs:
+      active_key_label: key-2017-01
+      auctioneer:
+        api_location: auctioneer.service.cf.internal:9016
+        ca_cert: ((certs_bosh_ca_cert))
+        client_cert: ((certs_auctioneer_client_cert))
+        client_key: ((certs_auctioneer_client_key))
+        require_tls: true
+      ca_cert: ((certs_bosh_ca_cert))
+      dropsonde_port: ((dropsonde_incoming_port))
+      encryption_keys:
+      - label: key-2017-01
+        passphrase: ((secrets_bbs_encryption_key))
+      etcd:
+        ca_cert: ""
+        client_cert: ""
+        client_key: ""
+        machines: []
+        require_ssl: false
+      rep:
+        ca_cert: ((certs_bosh_ca_cert))
+        client_cert: ((certs_rep_client_cert))
+        client_key: ((certs_rep_client_key))
+        require_tls: true
+      require_ssl: true
+      server_cert: ((certs_bbs_server_cert))
+      server_key: ((certs_bbs_server_key))
+      sql:
+        db_driver: postgres
+        db_host: ((terraform_outputs_cf_db_address))
+        db_password: ((secrets_cf_db_bbs_password))
+        db_port: 5432
+        db_schema: bbs
+        db_username: bbs
+    cfdot:
+      bbs:
+        ca_cert: ((certs_bosh_ca_cert))
+        client_cert: ((certs_bbs_client_cert))
+        client_key: ((certs_bbs_client_key))
+        use_ssl: true
+    executor:
+      memory_capacity_mb: ((cell_memory_capacity_mb))
+    file_server:
+      dropsonde_port: ((dropsonde_incoming_port))
+    locket:
+      sql:
+        db_driver: postgres
+        db_host: ((terraform_outputs_cf_db_address))
+        db_password: ((secrets_cf_db_locket_password))
+        db_port: 5432
+        db_schema: locket
+        db_username: locket
+    rep:
+      bbs:
+        api_location: bbs.service.cf.internal:8889
+        ca_cert: ((certs_bosh_ca_cert))
+        client_cert: ((certs_bbs_client_cert))
+        client_key: ((certs_bbs_client_key))
+        require_ssl: true
+      ca_cert: ((certs_bosh_ca_cert))
+      dropsonde_port: ((dropsonde_incoming_port))
+      enable_legacy_api_endpoints: false
+      preloaded_rootfses:
+      - cflinuxfs2:/var/vcap/packages/cflinuxfs2/rootfs.tar
+      require_tls: true
+      server_cert: ((certs_rep_server_cert))
+      server_key: ((certs_rep_server_key))
+    ssh_proxy:
+      bbs:
+        api_location: bbs.service.cf.internal:8889
+        ca_cert: ((certs_bosh_ca_cert))
+        client_cert: ((certs_bbs_client_cert))
+        client_key: ((certs_bbs_client_key))
+        require_ssl: true
+      diego_credentials: ""
+      dropsonde_port: ((dropsonde_incoming_port))
+      enable_cf_auth: true
+      enable_diego_auth: false
+      host_key: ((secrets_ssh_proxy_host_key.private_key))
+      uaa_secret: ((secrets_uaa_clients_ssh_proxy_secret))
+      uaa_token_url: https://uaa.((system_domain))/oauth/token
+    ssl:
+      skip_cert_verify: false
+      starting_container_weight: 0.25
+  disk_quota_enabled: true
+  doppler:
+    blacklisted_syslog_ranges: null
+    debug: false
+    disable_announce: true
+    maxRetainedLogMessages: 100
+    outgoing_port: 8081
+    port: 443
+    unmarshaller_count: 5
+  doppler_endpoint:
+    shared_secret: ((secrets_loggregator_endpoint_shared_secret))
+  dropsonde:
+    enabled: true
+  elasticsearch:
+    cluster_name: logsearch
+    master_hosts: ((elasticsearch_master_static_ips))
+  elasticsearch_config:
+    elasticsearch:
+      host: ((terraform_outputs_logsearch_elastic_master_elb_dns_name))
+    templates:
+    - index_template: /var/vcap/packages/logsearch-config/default-mappings.json
+  garden:
+    cleanup_process_dirs_on_wait: true
+    deny_networks:
+    - 0.0.0.0/0
+    log_level: error
+  ha_proxy:
+    additional_frontend_config: |
+      capture response header strict-transport-security len 128
+      http-response add-header Strict-Transport-Security max-age=31536000;\ includeSubDomains;\ preload unless { capture.res.hdr(0) -m found }
+    disable_http: true
+    enable_healthcheck_frontend: true
+    enable_http_redirect_frontend: true
+    enable_proxy_protocol: true
+    go_router:
+      healthcheck_port: 8080
+      port: 80
+      servers:
+      - 127.0.0.1
+    ssl_pem: ((certs_router_internal_cert))((certs_router_internal_key))
+  haproxy:
+    kibana:
+      auth:
+        password: ((secrets_kibana_admin_password))
+        username: admin
+      backend_port: 5601
+      backend_servers:
+      - localhost
+      inbound_port: 5602
+  kibana:
+    elasticsearch:
+      host: ((terraform_outputs_logsearch_elastic_master_elb_dns_name))
+      port: 9200
+    request_timeout: 300000
+    shard_timeout: 30000
+  logger_endpoint:
+    port: 443
+  loggregator:
+    blacklisted_syslog_ranges:
+    - end: 10.10.255.255
+      start: 10.10.0.0
+    debug: false
+    disable_syslog_drains: true
+    dropsonde_incoming_port: ((dropsonde_incoming_port))
+    maxRetainedLogMessages: 100
+    outgoing_dropsonde_port: 8081
+    tls:
+      ca_cert: ((certs_bosh_ca_cert))
+      cc_trafficcontroller:
+        cert: ((certs_cc_trafficcontroller_cert))
+        key: ((certs_cc_trafficcontroller_key))
+      doppler:
+        cert: ((certs_doppler_cert))
+        key: ((certs_doppler_key))
+      metron:
+        cert: ((certs_metron_cert))
+        key: ((certs_metron_key))
+      reverse_log_proxy:
+        cert: ((certs_reverse_log_proxy_cert))
+        key: ((certs_reverse_log_proxy_key))
+      statsd_injector:
+        cert: ((certs_statsd_injector_cert))
+        key: ((certs_statsd_injector_key))
+      syslogdrainbinder:
+        cert: ((certs_cc_client_cert))
+        key: ((certs_cc_client_key))
+      trafficcontroller:
+        cert: ((certs_trafficcontroller_cert))
+        key: ((certs_trafficcontroller_key))
+    traffic_controller_url: wss://doppler.((system_domain)):443
+  loggregator_endpoint:
+    shared_secret: ((secrets_loggregator_endpoint_shared_secret))
+  login:
+    asset_base_url: https://paas-uaa-assets.((terraform_outputs_cf_apps_domain))
+    branding:
+      company_name: GOV.UK PaaS
+    enabled: true
+    links:
+      homeRedirect: https://www.cloud.service.gov.uk/next-steps?account-updated
+      passwd: https://login.((system_domain))/forgot_password
+      signup: https://www.cloud.service.gov.uk/signup
+    saml:
+      activeKeyId: key1
+      keys:
+        key1:
+          certificate: ((certs_saml_cert))
+          key: ((certs_saml_key))
+          passphrase: ""
+    self_service_links_enabled: true
+    smtp:
+      auth: true
+      from_address: gov-uk-paas-support@digital.cabinet-office.gov.uk
+      host: ((terraform_outputs_ses_smtp_host))
+      password: ((terraform_outputs_ses_smtp_password))
+      port: 587
+      starttls: true
+      user: ((terraform_outputs_ses_smtp_aws_access_key_id))
+  logstash_parser:
+    custom_filters: |
+      if [garden][data][spec] == "" {
+        mutate {
+          remove_field => [ "[garden][data][spec]" ]
+        }
+      }
+      if [@source][component] == "gorouter" {
+        mutate { replace => { "type" => "gorouter" } }
+        grok {
+          match => {
+            "@message" =>
+              '%{HOSTNAME:[gorouter][host]} - \[%{TIMESTAMP_ISO8601:[gorouter][timestamp]}\] "%{WORD:[gorouter][method]} %{URIPATHPARAM:[gorouter][request]} %{NOTSPACE:[gorouter][httpversion]}" %{BASE10NUM:[gorouter][status]} %{BASE10NUM:[gorouter][bytesreceived]} %{BASE10NUM:[gorouter][bytessent]} %{QUOTEDSTRING:[gorouter][referer]} %{QUOTEDSTRING:[gorouter][useragent]} %{QUOTEDSTRING:[gorouter][clientaddr]} %{QUOTEDSTRING:[gorouter][upstreamaddr]} %{GREEDYDATA:routerkeys}'
+            }
+          tag_on_failure => ["fail/cloudfoundry/gorouter/grok"]
+          add_tag => ["gorouter"]
+        }
+        kv {
+          source => "router_keys"
+          target => "[gorouter][header]"
+          value_split => ":"
+          remove_field => "router_keys"
+        }
+      }
+      date {
+        match => [ "[gorouter][timestamp]", "ISO8601" ]
+        target => "@timestamp"
+      }
+      mutate {
+        remove_field => [ "[gorouter][timestamp]" ]
+      }
+      if [@source][component] == "vcap_nginx_access" {
+        grok {
+          match => {
+            "@message" =>
+            '%{IPORHOST:[nginx][clientip]} - \[%{HTTPDATE:[nginx][timestamp]}\] "%{WORD:[nginx][verb]} %{URIPATHPARAM:[nginx][request]} HTTP/%{NUMBER:[nginx][httpversion]}" %{NUMBER:[nginx][response]} (?:%{NUMBER:[nginx][bytes]}|-) (?:"(?:%{URI:[nginx][referrer]}|-)"|%{QS:[nginx][referrer]}) %{QS:[nginx][agent]} %{DATA:[nginx][x_forwarded_for]} vcap_request_id:%{UUID:[nginx][vcap_request_id]} response_time:%{NUMBER:[nginx][response_time]}'
+            }
+        }
+      }
+      date {
+        match => [ "[nginx][timestamp]", "dd/MMMM/yyyy:HH:mm:ss Z", "dd/MMM/yyyy:HH:mm:ss Z", "ISO8601" ]
+        target => "@timestamp"
+      }
+      mutate {
+        remove_field => [ "[nginx][timestamp]" ]
+      }
+
+      # Remove unnecessary or empty fields
+      mutate {
+        remove_field => [
+          "syslog5424_ver",
+          "syslog_msgid",
+          "syslog_procid",
+          "syslog_sd_id",
+          "syslog_sd_params",
+          "[@source][director]"
+        ]
+      }
+    filters:
+    - logstash: /var/vcap/packages/logsearch-config-logstash-filters/logstash-filters-default.conf
+    - custom-filters: /var/vcap/jobs/parser-config-lfc/config/logstash-filters-custom.conf
+  metron_agent:
+    deployment: ((environment))
+    dropsonde_incoming_port: ((dropsonde_incoming_port))
+  metron_endpoint:
+    shared_secret: ((secrets_loggregator_endpoint_shared_secret))
+  nats:
+    debug: false
+    machines: ((nats_static_ips))
+    monitor_port: 0
+    password: ((secrets_nats_password))
+    port: ((nats_port))
+    prof_port: 0
+    trace: false
+    user: nats_user
+  racoon:
+    certificate_authority_cert: ((certs_ipsec_ca_cert))
+    certificate_authority_private_key: ((certs_ipsec_ca_key))
+    level: require
+    verify_certificate: "on"
+  request_timeout_in_seconds: 900
+  router:
+    backends:
+      cert_chain: ((certs_router_internal_cert))
+      enable_tls: true
+      private_key: ((certs_router_internal_key))
+    drain_wait: 120
+    enable_access_log_streaming: true
+    enable_ssl: false
+    max_idle_connections: 0
+    route_services_secret: ((secrets_route_services_secret))
+    status:
+      password: ((secrets_router_password))
+      port: 8080
+      user: router_user
+    tracing:
+      enable_zipkin: true
+  smoke_tests:
+    api: api.((system_domain))
+    apps_domain: ((app_domain))
+    artifacts_directory: /tmp/artifacts
+    backend: ""
+    ginkgo_opts: ""
+    logging_app: ""
+    org: SMOKE_TESTS
+    password: ((secrets_uaa_admin_password))
+    runtime_app: ""
+    skip_ssl_validation: false
+    space: SMOKE_TESTS
+    suite_name: CF_SMOKE_TESTS
+    use_existing_org: false
+    use_existing_space: false
+    user: admin
+  ssl:
+    skip_cert_verify: false
+  statsd_injector:
+    deployment: ((environment))
+  support_address: https://docs.cloud.service.gov.uk
+  syslog_daemon_config:
+    enable: false
+  system_domain: ((terraform_outputs_cf_root_domain))
+  system_domain_organization: admin
+  traffic_controller:
+    outgoing_port: 8080
+  uaa:
+    admin:
+      client_secret: ((secrets_uaa_admin_client_secret))
+    ca_cert: ((certs_bosh_ca_cert))
+    cc:
+      client_secret: ((secrets_uaa_cc_client_secret))
+    clients:
+      cc-service-dashboards:
+        authorities: clients.read,clients.write,clients.admin
+        authorized-grant-types: client_credentials
+        override: true
+        redirect-uri: https://login.((system_domain))
+        secret: ((secrets_uaa_clients_cc_service_dashboards_password))
+      cc_routing:
+        authorities: routing.router_groups.read
+        authorized-grant-types: client_credentials
+        override: true
+        secret: ((secrets_uaa_cc_routing_secret))
+      cc_service_key_client:
+        authorities: credhub.read,credhub.write
+        authorized-grant-types: client_credentials
+        override: true
+        secret: ((secrets_uaa_clients_cc_service_key_client_secret))
+      cdn_broker:
+        authorities: uaa.none
+        authorized-grant-types: password
+        override: true
+        scope: cloud_controller.admin_read_only
+        secret: ((secrets_uaa_clients_cdn_broker_secret))
+      cf:
+        access-token-validity: 600
+        authorities: uaa.none
+        authorized-grant-types: password,refresh_token
+        override: true
+        refresh-token-validity: 604800
+        scope: cloud_controller.read,cloud_controller.write,openid,password.write,cloud_controller.admin,cloud_controller.admin_read_only,cloud_controller.global_auditor,scim.read,scim.write,scim.invite,doppler.firehose,uaa.user,routing.router_groups.read,routing.router_groups.write
+        secret: ""
+      cloud_controller_username_lookup:
+        authorities: scim.userids
+        authorized-grant-types: client_credentials
+        override: true
+        secret: ((secrets_uaa_clients_cloud_controller_username_lookup_secret))
+      doppler:
+        authorities: uaa.resource
+        authorized-grant-types: client_credentials
+        override: true
+        secret: ((secrets_uaa_clients_doppler_secret))
+      gorouter:
+        authorities: routing.routes.read
+        authorized-grant-types: client_credentials
+        override: true
+        secret: ((secrets_uaa_clients_gorouter_secret))
+      graphite-nozzle:
+        access-token-validity: 1209600
+        authorities: oauth.login,doppler.firehose
+        authorized-grant-types: authorization_code,client_credentials,refresh_token
+        override: true
+        redirect-uri: https://login.((system_domain))/login
+        scope: openid,oauth.approvals,doppler.firehose
+        secret: ((secrets_uaa_clients_firehose_password))
+      login:
+        authorities: oauth.login,scim.write,clients.read,notifications.write,critical_notifications.write,emails.write,scim.userids,password.write
+        authorized-grant-types: authorization_code,client_credentials,refresh_token
+        override: true
+        redirect-uri: https://login.((system_domain))
+        scope: openid,oauth.approvals
+        secret: ((secrets_uaa_clients_login_secret))
+      notifications:
+        authorities: cloud_controller.admin,scim.read
+        authorized-grant-types: client_credentials
+        override: true
+        secret: ((secrets_uaa_clients_notifications_secret))
+      paas-admin:
+        authorities: uaa.none
+        authorized-grant-types: authorization_code,refresh_token
+        autoapprove: true
+        override: true
+        redirect-uri: https://paas-admin.((app_domain))/auth/cloudfoundry/callback
+        scope: openid,oauth.approvals,cloud_controller.read,cloud_controller.admin_read_only,cloud_controller.global_auditor
+        secret: ((secrets_uaa_clients_paas_admin_secret))
+      paas-billing:
+        access-token-validity: 1209600
+        authorities: cloud_controller.admin_read_only,uaa.resource
+        authorized-grant-types: client_credentials,refresh_token,authorization_code
+        autoapprove: true
+        override: true
+        redirect-uri: https://paas-billing.((app_domain))/oauth/callback
+        scope: openid,oauth.approvals,cloud_controller.admin_read_only,cloud_controller.read,cloud_controller.global_auditor,cloud_controller.admin
+        secret: ((secrets_uaa_clients_paas_billing_secret))
+      paas-metrics:
+        access-token-validity: 1209600
+        authorities: oauth.login,cloud_controller.global_auditor
+        authorized-grant-types: client_credentials,refresh_token
+        override: true
+        redirect-uri: https://login.((system_domain))
+        scope: openid,oauth.approvals,cloud_controller.global_auditor
+        secret: ((secrets_uaa_clients_paas_metrics_secret))
+      ssh-proxy:
+        authorized-grant-types: authorization_code
+        autoapprove: true
+        override: true
+        redirect-uri: https://login.((system_domain))/login
+        scope: openid,cloud_controller.read,cloud_controller.write,cloud_controller.admin
+        secret: ((secrets_uaa_clients_ssh_proxy_secret))
+      tcp_emitter:
+        authorities: routing.routes.write,routing.routes.read
+        authorized-grant-types: client_credentials
+        override: true
+        secret: ""
+      tcp_router:
+        authorities: routing.routes.read
+        authorized-grant-types: client_credentials
+        override: true
+        secret: ""
+      user_invitation:
+        authorities: oauth.login,scim.write,emails.write,scim.userids
+        authorized-grant-types: password,refresh_token
+        override: true
+        redirect-uri: https://www.cloud.service.gov.uk/next-steps?success
+        scope: openid,password.write,scim.read,scim.write,scim.invite,uaa.user
+        secret: ((secrets_uaa_clients_login_secret))
+    internal_url: https://uaa.service.cf.internal:8443
+    issuer: https://uaa.((system_domain))
+    jwt:
+      policy:
+        active_key_id: default
+        global:
+          refreshTokenValiditySeconds: 604800
+        keys:
+          default:
+            signingKey: ((certs_uaa_jwt_signing_key))
+          previous:
+            signingKey: ((certs_uaa_jwt_signing_old_key))
+        refreshTokenValiditySeconds: 604800
+    logging_level: INFO
+    password:
+      policy:
+        minLength: 8
+    port: 8080
+    require_https: false
+    scim:
+      groups:
+        cloud_controller.global_auditor: Global Auditor read only group
+      userids_enabled: true
+      users:
+      - groups:
+        - scim.write
+        - scim.read
+        - scim.invite
+        - openid
+        - cloud_controller.admin
+        - cloud_controller.admin_read_only
+        - doppler.firehose
+        name: admin
+        password: ((secrets_uaa_admin_password))
+    ssl:
+      port: 8443
+    sslCertificate: ((certs_uaa_internal_cert))
+    sslPrivateKey: ((certs_uaa_internal_key))
+    token_url: https://uaa.((system_domain))/oauth/token
+    url: https://uaa.((system_domain))
+    zones:
+      internal:
+        hostnames:
+        - uaa.service.cf.internal
+  uaadb:
+    address: ((terraform_outputs_cf_db_address))
+    databases:
+    - citext: true
+      name: uaa
+      tag: uaa
+    db_scheme: postgresql
+    port: 5432
+    roles:
+    - name: uaa
+      password: ((secrets_cf_db_uaa_password))
+      tag: admin
+releases:
+- name: consul
+  sha1: 61b429ae13e0fde0ebdb98fce99e08f7baf60a16
+  url: https://bosh.io/d/github.com/cloudfoundry-incubator/consul-release?v=191
+  version: "191"
+- name: nats
+  sha1: 1300071c7cf43f5d299a6eaec6f6bb6cca7eac3b
+  url: https://bosh.io/d/github.com/cloudfoundry/nats-release?v=22
+  version: "22"
+- name: uaa
+  sha1: 393d844138f7b32017d7706684c36bf499e8cc79
+  url: https://bosh.io/d/github.com/cloudfoundry/uaa-release?v=55
+  version: "55"
+- name: statsd-injector
+  sha1: f995b553969a73d717cf42e7d240f4e899efd8ac
+  url: https://bosh.io/d/github.com/cloudfoundry/statsd-injector-release?v=1.2.0
+  version: 1.2.0
+- name: routing
+  sha1: fa6b0966e38b4089e0565fcab8bf09035ab43778
+  url: https://bosh.io/d/github.com/cloudfoundry-incubator/cf-routing-release?v=0.172.0
+  version: 0.172.0
+- name: capi
+  sha1: da59f9232a828e364337b81952a5510d8f1ca3b9
+  url: https://bosh.io/d/github.com/cloudfoundry/capi-release?v=1.49.0
+  version: 1.49.0
+- name: diego
+  sha1: 7525f412d6698f499124f0facee64a40a1e99ec0
+  url: https://bosh.io/d/github.com/cloudfoundry/diego-release?v=1.35.0
+  version: 1.35.0
+- name: garden-runc
+  sha1: d9a7901c0502d97c043b857496f0f414a5843e8d
+  url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=1.11.1
+  version: 1.11.1
+- name: cflinuxfs2
+  sha1: dd38c18449d3119d42ad1ab7bba589e6da9e1a7c
+  url: https://bosh.io/d/github.com/cloudfoundry/cflinuxfs2-release?v=1.187.0
+  version: 1.187.0
+- name: paas-haproxy
+  sha1: c8c90a4c14ea2201a37469596b5cef309864a394
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/paas-haproxy-0.1.5.tgz
+  version: 0.1.5
+- name: datadog-for-cloudfoundry
+  sha1: 6f900dacfbd2dc7e684435de9577ea63e7cdb174
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/datadog-for-cloudfoundry-0.0.1520264538.tgz
+  version: 0.0.1520264538
+- name: ipsec
+  sha1: 6a9e252162519e50f6c511c489ba304a286d496a
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/ipsec-0.1.3.tgz
+  version: 0.1.3
+- name: loggregator
+  sha1: f83ca26da62276e4e8247e32dbfbf2ae1a4c6138
+  url: https://bosh.io/d/github.com/cloudfoundry/loggregator-release?v=101.6
+  version: "101.6"
+- name: cf-syslog-drain
+  sha1: ccc588acc4854d669f60ad1c826d2b366e3548c6
+  url: https://bosh.io/d/github.com/cloudfoundry/cf-syslog-drain-release?v=5.1
+  version: "5.1"
+- name: binary-buildpack
+  sha1: d8d7db55c1602a8587ed681e714a4d121a813a36
+  url: https://bosh.io/d/github.com/cloudfoundry/binary-buildpack-release?v=1.0.16
+  version: 1.0.16
+- name: go-buildpack
+  sha1: a5e35c37446271cd1294785057fe3fb16bc643e9
+  url: https://bosh.io/d/github.com/cloudfoundry/go-buildpack-release?v=1.8.18
+  version: 1.8.18
+- name: java-buildpack
+  sha1: c5ad741533275c1b9ae6a844dda5d0ae14669add
+  url: https://bosh.io/d/github.com/cloudfoundry/java-buildpack-release?v=4.8
+  version: "4.8"
+- name: nodejs-buildpack
+  sha1: 5759e23cc03bfe6918a10420900a945063596ea8
+  url: https://bosh.io/d/github.com/cloudfoundry/nodejs-buildpack-release?v=1.6.16
+  version: 1.6.16
+- name: php-buildpack
+  sha1: 76192602e33b77df2822d47f0da10da93071d6ee
+  url: https://bosh.io/d/github.com/cloudfoundry/php-buildpack-release?v=4.3.48
+  version: 4.3.48
+- name: python-buildpack
+  sha1: e45487dd74f714c3d6b49ca5155cc74c958e22df
+  url: https://bosh.io/d/github.com/cloudfoundry/python-buildpack-release?v=1.6.8
+  version: 1.6.8
+- name: ruby-buildpack
+  sha1: e26b5f179473d03091de1fa8c6cab7ddab2edd4f
+  url: https://bosh.io/d/github.com/cloudfoundry/ruby-buildpack-release?v=1.7.11
+  version: 1.7.11
+- name: staticfile-buildpack
+  sha1: 0629f6cc368475e914f9219d3f87d78b820c3b00
+  url: https://bosh.io/d/github.com/cloudfoundry/staticfile-buildpack-release?v=1.4.21
+  version: 1.4.21
+- name: graphite
+  sha1: 7ce15711ae9afc04ccf152bab3f7de9b234f7c4f
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/graphite-0.1.1.tgz
+  version: 0.1.1
+- name: grafana
+  sha1: 483ee4a07d683c94014efede103dd93cb92cd883
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/grafana-0.1.2.tgz
+  version: 0.1.2
+- name: rds-broker
+  sha1: 8f52931dd63f2ac7e0335b2269633edfba40e3eb
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/rds-broker-0.1.21.tgz
+  version: 0.1.21
+- name: cdn-broker
+  sha1: 7db1bf1d80707e56d257d813d5155ce3c6767127
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/cdn-broker-0.1.6.tgz
+  version: 0.1.6
+- name: elasticache-broker
+  sha1: 189898fb860b5f51ac62dd74d5d2e0b1ad7c94f6
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/elasticache-broker-0.1.5.tgz
+  version: 0.1.5
+- name: logsearch
+  sha1: 96d0249797be68d47027cf3cda904a4eaee5aa1f
+  url: https://bosh.io/d/github.com/cloudfoundry-community/logsearch-boshrelease?v=205.0.1
+  version: 205.0.1
+- name: logsearch-for-cloudfoundry
+  sha1: 7b450ea1ed91fe434eadd667f393f5d877321f1f
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/logsearch-for-cloudfoundry-0.1.4.tgz
+  version: 0.1.4
+stemcells:
+- alias: default
+  name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+  version: "3468.25"
+update:
+  canaries: 0
+  canary_watch_time: 30000-420000
+  max_in_flight: 1
+  serial: false
+  update_watch_time: 5000-420000
+
