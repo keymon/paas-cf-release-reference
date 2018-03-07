@@ -625,6 +625,7 @@ instance_groups:
             timeout_in_seconds: 
           droplet_upload:
             timeout_in_seconds: 
+        directories: 
         external_protocol: 
         external_host: api
         bulk_api_password: ((secrets_bulk_api_password))
@@ -678,31 +679,35 @@ instance_groups:
         default_quota_definition: default
         resource_pool:
           resource_directory_key: ((environment))-cf-resources
-          fog_connection: &14264440
+          fog_connection: &9684740
             provider: AWS
             region: ((terraform_outputs_region))
             use_iam_profile: true
+          cdn: 
         packages:
           app_package_directory_key: ((environment))-cf-packages
           max_package_size: 1073741824
           max_valid_packages_stored: 
-          fog_connection: &14290080
+          fog_connection: &9718520
             provider: AWS
             region: ((terraform_outputs_region))
             use_iam_profile: true
+          cdn: 
         droplets:
           droplet_directory_key: ((environment))-cf-droplets
           max_staged_droplets_stored: 
-          fog_connection: &14335400
+          fog_connection: &9764300
             provider: AWS
             region: ((terraform_outputs_region))
             use_iam_profile: true
+          cdn: 
         buildpacks:
           buildpack_directory_key: ((environment))-cf-buildpacks
-          fog_connection: &14375220
+          fog_connection: &9803860
             provider: AWS
             region: ((terraform_outputs_region))
             use_iam_profile: true
+          cdn: 
         db_encryption_key: ((secrets_cc_db_encryption_key))
         default_app_memory: 1024
         default_app_disk_in_mb: 1024
@@ -795,11 +800,11 @@ instance_groups:
           public_cert: ((certs_cc_server_cert))
           private_key: ((certs_cc_server_key))
       ccdb:
-        databases: &14130300
+        databases: &9555720
         - citext: true
           name: api
           tag: cc
-        roles: &14129080
+        roles: &9554520
         - name: api
           password: ((secrets_cf_db_api_password))
           tag: admin
@@ -958,17 +963,21 @@ instance_groups:
         staging_upload_password: ((secrets_staging_upload_password))
         resource_pool:
           resource_directory_key: ((environment))-cf-resources
-          fog_connection: *14264440
+          fog_connection: *9684740
+          cdn: 
         packages:
           app_package_directory_key: ((environment))-cf-packages
           max_package_size: 1073741824
-          fog_connection: *14290080
+          fog_connection: *9718520
+          cdn: 
         droplets:
           droplet_directory_key: ((environment))-cf-droplets
-          fog_connection: *14335400
+          fog_connection: *9764300
+          cdn: 
         buildpacks:
           buildpack_directory_key: ((environment))-cf-buildpacks
-          fog_connection: *14375220
+          fog_connection: *9803860
+          cdn: 
         db_encryption_key: ((secrets_cc_db_encryption_key))
         default_app_memory: 1024
         default_app_disk_in_mb: 1024
@@ -997,8 +1006,8 @@ instance_groups:
           public_cert: ((certs_cc_server_cert))
           private_key: ((certs_cc_server_key))
       ccdb:
-        databases: *14130300
-        roles: *14129080
+        databases: *9555720
+        roles: *9554520
         db_scheme: postgres
         address: ((terraform_outputs_cf_db_address))
         port: 5432
@@ -1268,17 +1277,21 @@ instance_groups:
         staging_upload_password: ((secrets_staging_upload_password))
         resource_pool:
           resource_directory_key: ((environment))-cf-resources
-          fog_connection: *14264440
+          fog_connection: *9684740
+          cdn: 
         packages:
           app_package_directory_key: ((environment))-cf-packages
           max_package_size: 1073741824
-          fog_connection: *14290080
+          fog_connection: *9718520
+          cdn: 
         droplets:
           droplet_directory_key: ((environment))-cf-droplets
-          fog_connection: *14335400
+          fog_connection: *9764300
+          cdn: 
         buildpacks:
           buildpack_directory_key: ((environment))-cf-buildpacks
-          fog_connection: *14375220
+          fog_connection: *9803860
+          cdn: 
         allow_app_ssh_access: true
         db_encryption_key: ((secrets_cc_db_encryption_key))
         default_app_memory: 1024
@@ -1303,8 +1316,8 @@ instance_groups:
           public_cert: ((certs_cc_server_cert))
           private_key: ((certs_cc_server_key))
       ccdb:
-        databases: *14130300
-        roles: *14129080
+        databases: *9555720
+        roles: *9554520
         db_scheme: postgres
         address: ((terraform_outputs_cf_db_address))
         port: 5432
@@ -2760,7 +2773,7 @@ instance_groups:
     release: logsearch
     properties:
       logstash_parser:
-        filters: &14021740
+        filters: &9585540
         - logstash: /var/vcap/packages/logsearch-config-logstash-filters/logstash-filters-default.conf
         - custom-filters: /var/vcap/jobs/parser-config-lfc/config/logstash-filters-custom.conf
         elasticsearch:
@@ -2814,7 +2827,7 @@ instance_groups:
     release: logsearch
     properties:
       logstash_parser:
-        filters: *14021740
+        filters: *9585540
         elasticsearch:
           data_hosts:
           - ((terraform_outputs_logsearch_elastic_master_elb_dns_name))

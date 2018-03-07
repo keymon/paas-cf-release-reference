@@ -17,44 +17,56 @@ class PropertyTree
     PropertyTree.new(YAML.safe_load(yaml_string))
   end
 
-  def recursive_get(tree, key_array)
-    return true, tree if key_array.empty?
-    return false, nil if tree.nil?
+  def recursive_get(tree, key_array, acum_key_array=[])
+    return true, tree, nil if key_array.empty?
+    return false, nil, acum_key_array if tree.nil?
     current_key, *next_keys = key_array
 
     next_level = case tree
                  when Hash
                    if not tree.has_key? current_key
-                       return false, nil
+                       return false, nil, nil
                    end
                    tree[current_key]
                  when Array
                    if current_key =~ /\A[-+]?\d+\z/ # If the key is an int, access by index
                      if current_key.to_i >= tree.length
-                       return false, nil
+                       return false, nil, nil
                      end
                      tree[current_key.to_i]
                    else # if not, search for a element with `name: current_key`
                      ret = tree.select { |x| x.is_a?(Hash) && x['name'] == current_key }.first
                      if ret == nil
-                       return false, nil
+                       return false, nil, nil
                      end
                      ret
                    end
                  end
 
-    recursive_get(next_level, next_keys)
+    return recursive_get(next_level, next_keys, acum_key_array+[current_key])
+  end
+
+  # Return the parent subkey where the value is set to nil
+  # Returns a "key1.key2" or nil if it was not
+  def nil_parent_key(key)
+    key_array = key.split('.')
+    _, _, ret = self.recursive_get(@tree, key_array)
+    if ret
+      ret.join('.')
+    else
+      nil
+    end
   end
 
   def has_key?(key)
     key_array = key.split('.')
-    ret, _ = self.recursive_get(@tree, key_array)
+    ret, _, _ = self.recursive_get(@tree, key_array)
     ret
   end
 
   def get(key)
     key_array = key.split('.')
-    _, ret = self.recursive_get(@tree, key_array)
+    _, ret, _ = self.recursive_get(@tree, key_array)
     ret
   end
 
@@ -109,6 +121,11 @@ def get_properties_of_job(manifest, instance_group, release, job)
       properties_tree = PropertyTree.new(manifest["properties"].deep_merge(instance_group["properties"] || {}))
       if properties_tree.has_key? k
         properties = properties.deep_merge(add_tree_value(k, properties_tree[k]))
+      else
+        nil_parent_key = properties_tree.nil_parent_key(k)
+        if nil_parent_key
+          properties = properties.deep_merge(add_tree_value(nil_parent_key, nil))
+        end
       end
     }
   end
