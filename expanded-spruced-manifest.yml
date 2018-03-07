@@ -18,6 +18,7 @@ instance_groups:
           mode: server
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           dns_config:
             allow_stale: true
             max_stale: 30s
@@ -68,6 +69,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           dns_config:
             allow_stale: true
             max_stale: 30s
@@ -134,6 +136,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           dns_config:
             allow_stale: true
             max_stale: 30s
@@ -194,6 +197,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           dns_config:
             allow_stale: true
             max_stale: 30s
@@ -300,6 +304,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           services:
             uaa: {}
           dns_config:
@@ -580,6 +585,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           services:
             cloud_controller_ng: {}
           dns_config:
@@ -607,6 +613,7 @@ instance_groups:
         host_key_fingerprint: ((secrets_ssh_proxy_host_key.public_fingerprint))
       request_timeout_in_seconds: 900
       support_address: https://docs.cloud.service.gov.uk
+      description: 
       cc:
         external_port: 9022
         tls_port: 9023
@@ -614,14 +621,22 @@ instance_groups:
         jobs:
           global:
             timeout_in_seconds: 14400
+          blobstore_delete:
+            timeout_in_seconds: 
+          droplet_upload:
+            timeout_in_seconds: 
+        external_protocol: 
         external_host: api
         bulk_api_password: ((secrets_bulk_api_password))
         internal_api_user: internal_user
         internal_api_password: ((secrets_bulk_api_password))
+        min_cli_version: 
+        min_recommended_cli_version: 
         logging_level: info
         db_logging_level: debug
         default_health_check_timeout: 60
         maximum_health_check_timeout: 180
+        stacks: 
         staging_upload_user: staging_upload_user
         staging_upload_password: ((secrets_staging_upload_password))
         quota_definitions:
@@ -663,26 +678,28 @@ instance_groups:
         default_quota_definition: default
         resource_pool:
           resource_directory_key: ((environment))-cf-resources
-          fog_connection: &9085880
+          fog_connection: &14264440
             provider: AWS
             region: ((terraform_outputs_region))
             use_iam_profile: true
         packages:
           app_package_directory_key: ((environment))-cf-packages
           max_package_size: 1073741824
-          fog_connection: &9119140
+          max_valid_packages_stored: 
+          fog_connection: &14290080
             provider: AWS
             region: ((terraform_outputs_region))
             use_iam_profile: true
         droplets:
           droplet_directory_key: ((environment))-cf-droplets
-          fog_connection: &9156080
+          max_staged_droplets_stored: 
+          fog_connection: &14335400
             provider: AWS
             region: ((terraform_outputs_region))
             use_iam_profile: true
         buildpacks:
           buildpack_directory_key: ((environment))-cf-buildpacks
-          fog_connection: &9195900
+          fog_connection: &14375220
             provider: AWS
             region: ((terraform_outputs_region))
             use_iam_profile: true
@@ -694,9 +711,11 @@ instance_groups:
         client_max_body_size: 15M
         disable_custom_buildpacks: false
         broker_client_timeout_seconds: 70
+        broker_client_default_async_poll_interval_seconds: 
         broker_client_max_async_poll_duration_minutes: 11520
         development_mode: false
         newrelic:
+          license_key: 
           environment_name: ((environment))
           developer_mode: false
           monitor_mode: false
@@ -704,6 +723,11 @@ instance_groups:
           transaction_tracer:
             enabled: true
             record_sql: obfuscated
+        thresholds:
+          api:
+            alert_if_above_mb: 
+            restart_if_consistently_above_mb: 
+            restart_if_above_mb: 
         install_buildpacks:
         - name: staticfile_buildpack
           package: staticfile-buildpack
@@ -771,11 +795,11 @@ instance_groups:
           public_cert: ((certs_cc_server_cert))
           private_key: ((certs_cc_server_key))
       ccdb:
-        databases: &8950320
+        databases: &14130300
         - citext: true
           name: api
           tag: cc
-        roles: &8949100
+        roles: &14129080
         - name: api
           password: ((secrets_cf_db_api_password))
           tag: admin
@@ -892,6 +916,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           dns_config:
             allow_stale: true
             max_stale: 30s
@@ -917,27 +942,33 @@ instance_groups:
         jobs:
           global:
             timeout_in_seconds: 14400
+          blobstore_delete:
+            timeout_in_seconds: 
+          generic:
+            number_of_workers: 
+        external_protocol: 
         external_host: api
         internal_api_user: internal_user
         internal_api_password: ((secrets_bulk_api_password))
         logging_level: info
         db_logging_level: debug
         default_health_check_timeout: 60
+        stacks: 
         staging_upload_user: staging_upload_user
         staging_upload_password: ((secrets_staging_upload_password))
         resource_pool:
           resource_directory_key: ((environment))-cf-resources
-          fog_connection: *9085880
+          fog_connection: *14264440
         packages:
           app_package_directory_key: ((environment))-cf-packages
           max_package_size: 1073741824
-          fog_connection: *9119140
+          fog_connection: *14290080
         droplets:
           droplet_directory_key: ((environment))-cf-droplets
-          fog_connection: *9156080
+          fog_connection: *14335400
         buildpacks:
           buildpack_directory_key: ((environment))-cf-buildpacks
-          fog_connection: *9195900
+          fog_connection: *14375220
         db_encryption_key: ((secrets_cc_db_encryption_key))
         default_app_memory: 1024
         default_app_disk_in_mb: 1024
@@ -946,6 +977,7 @@ instance_groups:
         broker_client_timeout_seconds: 70
         development_mode: false
         newrelic:
+          license_key: 
           environment_name: ((environment))
           developer_mode: false
           monitor_mode: false
@@ -953,14 +985,20 @@ instance_groups:
           transaction_tracer:
             enabled: true
             record_sql: obfuscated
+        thresholds:
+          worker:
+            alert_if_above_mb: 
+            restart_if_consistently_above_mb: 
+            restart_if_above_mb: 
+        broker_client_default_async_poll_interval_seconds: 
         broker_client_max_async_poll_duration_minutes: 11520
         mutual_tls:
           ca_cert: ((certs_bosh_ca_cert))
           public_cert: ((certs_cc_server_cert))
           private_key: ((certs_cc_server_key))
       ccdb:
-        databases: *8950320
-        roles: *8949100
+        databases: *14130300
+        roles: *14129080
         db_scheme: postgres
         address: ((terraform_outputs_cf_db_address))
         port: 5432
@@ -989,6 +1027,11 @@ instance_groups:
     release: datadog-for-cloudfoundry
   - name: datadog-cc-worker
     release: datadog-for-cloudfoundry
+    properties:
+      cc:
+        jobs:
+          generic:
+            number_of_workers: 
   migrated_from:
   - name: api_worker
   name: cc-worker
@@ -1016,6 +1059,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           services:
             gorouter: {}
           dns_config:
@@ -1137,6 +1181,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           dns_config:
             allow_stale: true
             max_stale: 30s
@@ -1201,39 +1246,46 @@ instance_groups:
         jobs:
           global:
             timeout_in_seconds: 14400
+          app_usage_events_cleanup:
+            timeout_in_seconds: 
+          blobstore_delete:
+            timeout_in_seconds: 
         app_usage_events:
           cutoff_age_in_days: 45
         service_usage_events:
           cutoff_age_in_days: 45
         audit_events:
           cutoff_age_in_days: 31
+        external_protocol: 
         external_host: api
         internal_api_user: internal_user
         internal_api_password: ((secrets_bulk_api_password))
         logging_level: info
         db_logging_level: debug
         default_health_check_timeout: 60
+        stacks: 
         staging_upload_user: staging_upload_user
         staging_upload_password: ((secrets_staging_upload_password))
         resource_pool:
           resource_directory_key: ((environment))-cf-resources
-          fog_connection: *9085880
+          fog_connection: *14264440
         packages:
           app_package_directory_key: ((environment))-cf-packages
           max_package_size: 1073741824
-          fog_connection: *9119140
+          fog_connection: *14290080
         droplets:
           droplet_directory_key: ((environment))-cf-droplets
-          fog_connection: *9156080
+          fog_connection: *14335400
         buildpacks:
           buildpack_directory_key: ((environment))-cf-buildpacks
-          fog_connection: *9195900
+          fog_connection: *14375220
         allow_app_ssh_access: true
         db_encryption_key: ((secrets_cc_db_encryption_key))
         default_app_memory: 1024
         default_app_disk_in_mb: 1024
         maximum_app_disk_in_mb: 2048
         newrelic:
+          license_key: 
           environment_name: ((environment))
           developer_mode: false
           monitor_mode: false
@@ -1241,13 +1293,18 @@ instance_groups:
           transaction_tracer:
             enabled: true
             record_sql: obfuscated
+        thresholds:
+          api:
+            alert_if_above_mb: 
+            restart_if_consistently_above_mb: 
+            restart_if_above_mb: 
         mutual_tls:
           ca_cert: ((certs_bosh_ca_cert))
           public_cert: ((certs_cc_server_cert))
           private_key: ((certs_cc_server_key))
       ccdb:
-        databases: *8950320
-        roles: *8949100
+        databases: *14130300
+        roles: *14129080
         db_scheme: postgres
         address: ((terraform_outputs_cf_db_address))
         port: 5432
@@ -1356,6 +1413,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           services:
             doppler: {}
           dns_config:
@@ -1417,6 +1475,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           dns_config:
             allow_stale: true
             max_stale: 30s
@@ -1550,6 +1609,7 @@ instance_groups:
         agent:
           servers:
             lan: ((consul_static_ips))
+          log_level: 
           services:
             loggregator_trafficcontroller: {}
             reverse_log_proxy: {}
@@ -2700,7 +2760,7 @@ instance_groups:
     release: logsearch
     properties:
       logstash_parser:
-        filters: &8811740
+        filters: &14021740
         - logstash: /var/vcap/packages/logsearch-config-logstash-filters/logstash-filters-default.conf
         - custom-filters: /var/vcap/jobs/parser-config-lfc/config/logstash-filters-custom.conf
         elasticsearch:
@@ -2754,7 +2814,7 @@ instance_groups:
     release: logsearch
     properties:
       logstash_parser:
-        filters: *8811740
+        filters: *14021740
         elasticsearch:
           data_hosts:
           - ((terraform_outputs_logsearch_elastic_master_elb_dns_name))

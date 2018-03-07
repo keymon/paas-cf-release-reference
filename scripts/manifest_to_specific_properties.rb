@@ -18,27 +18,44 @@ class PropertyTree
   end
 
   def recursive_get(tree, key_array)
-    return tree if key_array.empty?
+    return true, tree if key_array.empty?
+    return false, nil if tree.nil?
     current_key, *next_keys = key_array
 
     next_level = case tree
                  when Hash
+                   if not tree.has_key? current_key
+                       return false, nil
+                   end
                    tree[current_key]
                  when Array
                    if current_key =~ /\A[-+]?\d+\z/ # If the key is an int, access by index
+                     if current_key.to_i >= tree.length
+                       return false, nil
+                     end
                      tree[current_key.to_i]
                    else # if not, search for a element with `name: current_key`
-                     tree.select { |x| x.is_a?(Hash) && x['name'] == current_key }.first
+                     ret = tree.select { |x| x.is_a?(Hash) && x['name'] == current_key }.first
+                     if ret == nil
+                       return false, nil
+                     end
+                     ret
                    end
                  end
-    if not next_level.nil?
-      recursive_get(next_level, next_keys)
-    end
+
+    recursive_get(next_level, next_keys)
+  end
+
+  def has_key?(key)
+    key_array = key.split('.')
+    ret, _ = self.recursive_get(@tree, key_array)
+    ret
   end
 
   def get(key)
     key_array = key.split('.')
-    self.recursive_get(@tree, key_array)
+    _, ret = self.recursive_get(@tree, key_array)
+    ret
   end
 
   def [](key)
@@ -90,7 +107,7 @@ def get_properties_of_job(manifest, instance_group, release, job)
     spec["properties"].each {|k, v|
       # Merge the global properties and the instance_group ones
       properties_tree = PropertyTree.new(manifest["properties"].deep_merge(instance_group["properties"] || {}))
-      if properties_tree[k] != nil
+      if properties_tree.has_key? k
         properties = properties.deep_merge(add_tree_value(k, properties_tree[k]))
       end
     }
@@ -114,4 +131,4 @@ manifest["instance_groups"].each do |instance_group|
   instance_group.delete("properties")
 end
 
-puts manifest.to_yaml()
+puts manifest.to_yaml() 
