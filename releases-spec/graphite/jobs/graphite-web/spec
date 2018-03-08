@@ -1,0 +1,86 @@
+---
+name: graphite-web
+
+packages:
+  - cairo
+  - django
+  - django-tagging
+  - fontconfig
+  - freetype
+  - graphite-web
+  - httpd
+  - libpng
+  - mod_wsgi
+  - pcre
+  - pixman
+  - postgresql
+  - psycopg2
+  - py2cairo
+  - pysqlite
+  - python
+  - pytz
+  - sqlite
+  - twisted
+  - whisper
+
+templates:
+  bin/graphite-web_ctl.erb: bin/graphite-web_ctl
+  config/dashboard.conf.erb: conf/dashboard.conf
+  config/graphite.wsgi.erb: conf/graphite.wsgi
+  config/graphTemplates.conf.erb: conf/graphTemplates.conf
+  config/local_settings.py.erb: conf/local_settings.py
+  config/httpd.conf.erb: conf/httpd.conf
+  config/graphite-vhost.conf.erb: conf/graphite-vhost.conf
+
+properties:
+
+  graphite-web.secret_key:
+    description: Set this to a long, random unique string to use as a secret key for this install.
+    default: THECAKEISALIE
+  graphite-web.time_zone:
+    description: Set your local timezone.
+    default: Europe/London
+
+  graphite-web.httpd.server_name:
+    description: The name the server uses to identify itself.
+    default: www.my-graphite.com
+  graphite-web.httpd.port:
+    description: The httpd listen port.
+    default: 80
+  graphite-web.httpd.server_admin:
+    description: Your address, where problems with the server should be e-mailed.
+    default: you@example.com
+
+  graphite-web.db.engine:
+    description: The database engine to use. Choose from either 'sqlite3' or 'postgresql_psycopg2'.
+    default: sqlite3
+
+  graphite-web.db.name:
+    description: Database name (a filepath if using sqlite3).
+    default: /var/vcap/store/graphite/storage/graphite.db
+
+  graphite-web.db.user:
+    description: Database username (not required if using sqlite3).
+    default: ""
+
+  graphite-web.db.password:
+    description: Database password (not required if using sqlite3).
+    default: ""
+
+  graphite-web.db.host:
+    description: Database host address (not required if using sqlite3).
+    default: ""
+
+  graphite-web.db.port:
+    description: Database port (not required if using sqlite3).
+    default: ""
+
+  graphite-web.wsgi.processes:
+    description: The number of daemon processes that should be started in the process group.
+    default: 5
+  graphite-web.wsgi.threads:
+    description: The number of threads to be created to handle requests in each daemon process within the process group.
+    default: 5
+  graphite-web.wsgi.inactivity-timeout:
+    description: The time (s) before the daemon process is shutdown and restarted after the daemon process has entered an idle state.
+    default: 120

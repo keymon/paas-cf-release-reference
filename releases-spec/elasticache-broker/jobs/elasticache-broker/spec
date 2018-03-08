@@ -1,0 +1,37 @@
+---
+name: elasticache-broker
+templates:
+  bin/job_properties.sh.erb: bin/job_properties.sh
+  bin/elasticache-broker-ctl.erb: bin/elasticache-broker-ctl
+  config/config.json.erb: config/config.json
+
+packages:
+  - bosh-helpers
+  - elasticache-broker
+
+properties:
+  elasticache-broker.broker_name:
+    description: "Broker name"
+  elasticache-broker.port:
+    description: "Broker Listen Port"
+    default: 80
+  elasticache-broker.broker_username:
+    description: "The username for basic auth between the Cloud Controller and the broker"
+    default: "elasticache-broker"
+  elasticache-broker.broker_password:
+    description: "The password for basic auth between the Cloud Controller and the broker"
+  elasticache-broker.auth_token_seed:
+    description: "The common seed for generating authentication tokens for the ElastiCache clusters"
+  elasticache-broker.cache_subnet_group_name:
+    description: "The ElastiCache Subnet Group name where the ElastiCache clusters will be created"
+  elasticache-broker.vpc_security_group_ids:
+    description: "The VPC security group ids which will be attached to the ElastiCache clusters"
+  elasticache-broker.catalog:
+    description: "The service catalog"
+  elasticache-broker.plan_configs:
+    description: "Contains extra configuration for the service plans"
+  elasticache-broker.region:
+    description: "AWS region"
+  elasticache-broker.log_level:
+    description: "Logging level, valid values are: DEBUG, INFO, ERROR, FATAL"
+    default: INFO

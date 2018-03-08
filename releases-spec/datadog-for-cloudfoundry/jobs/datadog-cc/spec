@@ -1,0 +1,15 @@
+---
+name: datadog-cc
+packages: []
+
+templates:
+  process.yaml.erb: config/datadog-integrations/process.yaml
+  http_check.yaml.erb: config/datadog-integrations/http_check.yaml
+
+properties:
+  cc.external_port:
+    description: "External Cloud Controller port"
+    default: 9022
+  cc.jobs.local.number_of_workers:
+    default: 2
+    description: "Number of local cloud_controller_worker workers"

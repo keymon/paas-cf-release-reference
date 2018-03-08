@@ -1,0 +1,25 @@
+---
+name: datadog-consul-agent-client
+packages: []
+
+templates:
+  process.yaml.erb: config/datadog-integrations/process.yaml
+  tcp_check.yaml.erb: config/datadog-integrations/tcp_check.yaml
+  consul.yaml.erb: config/datadog-integrations/consul.yaml
+
+properties:
+  consul.port:
+    description: "Port on which we expect the consul agent listening."
+    default: 8301
+  datadog.consul.monitor_url:
+    description: "URL for the datadog agent to connect to consul to monitor the integration. use nil to disable the integration."
+    default: http://localhost:8500
+  datadog.consul.network_latency_checks:
+    description: "Whether to enable network latency metrics collection. When enabled consul network coordinates will be retrieved and latency calculated for each node and between data centers"
+    default: false
+  datadog.consul.service_whitelist:
+    description: "List of services to monitor. Use `nil` to monitor all services (up to 50). Use [] to monitor none"
+    default: []
+  datadog.consul.tags:
+    description: "Additional tags to apply to the metrics, events and service checks"
+    default: []

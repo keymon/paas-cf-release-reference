@@ -1,0 +1,15 @@
+---
+name: datadog-nats
+packages: []
+
+templates:
+  process.yaml.erb: config/datadog-integrations/process.yaml
+  tcp_check.yaml.erb: config/datadog-integrations/tcp_check.yaml
+
+properties:
+  nats.port:
+    description: "Listening Port for NATS server."
+    default: 4222
+  nats.cluster_port:
+    description: "Listening Port for NATS cluster."
+    default: 4223

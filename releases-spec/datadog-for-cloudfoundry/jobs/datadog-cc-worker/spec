@@ -1,0 +1,11 @@
+---
+name: datadog-cc-worker
+packages: []
+
+templates:
+  process.yaml.erb: config/datadog-integrations/process.yaml
+
+properties:
+  cc.jobs.generic.number_of_workers:
+    default: 1
+    description: "Number of generic cloud_controller_worker workers"

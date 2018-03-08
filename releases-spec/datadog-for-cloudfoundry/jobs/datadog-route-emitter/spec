@@ -1,0 +1,12 @@
+---
+name: datadog-route-emitter
+packages: []
+
+templates:
+  process.yaml.erb: config/datadog-integrations/process.yaml
+  http_check.yaml.erb: config/datadog-integrations/http_check.yaml
+
+properties:
+  diego.route_emitter.debug_addr:
+    description: "address at which to serve debug info"
+    default: "127.0.0.1:17009"

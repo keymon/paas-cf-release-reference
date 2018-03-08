@@ -1,0 +1,62 @@
+---
+name: haproxy
+
+description: "The HAProxy server can be used to terminate SSL in front of the Routers. Each HAProxy instance should point to multiple Routers."
+
+packages:
+- haproxy
+
+templates:
+  haproxy.conf.erb:          config/haproxy.conf
+  haproxy_syslog.conf.erb:   config/haproxy_syslog.conf
+  haproxy_ctl:               bin/haproxy_ctl
+  cert.pem.erb:              config/cert.pem
+
+properties:
+  ha_proxy.ssl_pem:
+    description: "SSL certificate (PEM file)"
+    default: ~
+  ha_proxy.disable_http:
+    description: "Disable port 80 traffic"
+    default: false
+  ha_proxy.enable_proxy_protocol:
+    description: "Enable port 81 for ProxyProtocol HTTP traffic. Will update X-Forwarded-Proto if dst_port was 443"
+    default: ~
+  ha_proxy.ssl_ciphers:
+    default: ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-CBC-SHA256:ECDHE-RSA-AES256-CBC-SHA384:ECDHE-RSA-AES128-CBC-SHA:ECDHE-RSA-AES256-CBC-SHA:AES128-SHA256:AES128-SHA
+    description: "List of SSL Ciphers that are passed to HAProxy"
+  ha_proxy.log_to_file:
+    description: "Whether to send logs to a file instead of the default syslog"
+    default: false
+  ha_proxy.dontlognull:
+    description: "Whether to disable logging of requests with no traffic (usually load-balancer TCP checks)"
+    default: false
+  ha_proxy.buffer_size_bytes:
+    description: "Buffer size to use for requests, any requests larger than this (large cookies or query strings) will result in a gateway error"
+    default: 16384
+  ha_proxy.enable_stats_socket:
+    description: "Whether to enable a socket that can be used to query errors and status"
+    default: false
+  request_timeout_in_seconds:
+    description: "Server and client timeouts in seconds"
+    default: 900
+  ha_proxy.go_router.servers:
+    description: "Array of the router IPs acting as the first group of HTTP/TCP backends"
+    default: []
+  ha_proxy.go_router.port:
+    description: "Listening port for the Go Router"
+    default: 80
+  ha_proxy.go_router.healthcheck_port:
+    description: "Listening port for the Go Router health check"
+    default: 8080
+  ha_proxy.additional_frontend_config:
+    description: "Configurations which are passed to the http-in and https-in configuration block"
+  ha_proxy.enable_healthcheck_frontend:
+    description: |
+      Add a frontend for health checks on port 82.
+    default: false
+  ha_proxy.enable_http_redirect_frontend:
+    description: |
+      Add a frontend on port 83 that redirects all http requests to the
+      corresponding https root endpoint.
+    default: false

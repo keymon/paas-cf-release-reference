@@ -1,0 +1,14 @@
+---
+name: datadog-logsearch-queue
+packages: []
+
+templates:
+  redisdb.yaml.erb: config/datadog-integrations/redisdb.yaml
+
+properties:
+  redis.port:
+    description: Redis port of queue
+    default: 6379
+  redis.key:
+    description: Name of queue to pull messages from
+    default: logstash

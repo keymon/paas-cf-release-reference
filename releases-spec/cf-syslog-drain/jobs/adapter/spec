@@ -1,0 +1,121 @@
+---
+name: adapter
+templates:
+  ctl.erb: bin/ctl
+  environment.sh.erb: bin/environment.sh
+  drain.erb: bin/drain
+  ca.crt.erb: certs/ca.crt
+  adapter.crt.erb: certs/adapter.crt
+  adapter.key.erb: certs/adapter.key
+  rlp_ca.crt.erb: certs/rlp_ca.crt
+  adapter_rlp.crt.erb: certs/adapter_rlp.crt
+  adapter_rlp.key.erb: certs/adapter_rlp.key
+
+packages:
+- adapter
+
+consumes:
+- name: reverse_log_proxy
+  type: reverse_log_proxy
+  optional: true
+
+provides:
+- name: adapter_addrs
+  type: addr
+  properties:
+  - scalablesyslog.adapter.port
+
+properties:
+  scalablesyslog.adapter.health:
+    description: The port for the adapter health endpoint.
+    default: 8080
+  scalablesyslog.adapter.pprof:
+    description: The port for pprof on the adapter.
+    default: 0
+
+  scalablesyslog.adapter.port:
+    description: The port for the adapter to listen on gRPC.
+    default: 4443
+  scalablesyslog.adapter.logs.addr:
+    description: |
+      The address of the Reverse Log Proxy (RLP) if Bosh DNS is not enabled.
+    default: "reverse-log-proxy.service.cf.internal:8082"
+  scalablesyslog.adapter.bosh_dns:
+    description: Enable Bosh DNS. Disabling this implies Consul DNS.
+    default: false
+  scalablesyslog.adapter.keepalive:
+    description: |
+      The duration for sending keepalive packets for TCP and TLS syslog
+      drains. Setting this to zero disables keepalives.
+    default: 30s
+  scalablesyslog.adapter.syslog_dial_timeout:
+    description: The timeout duration for dialing syslog drains.
+    default: 5s
+  scalablesyslog.adapter.syslog_io_timeout:
+    description: The timeout duration for writing to syslog drains.
+    default: 1m
+  scalablesyslog.adapter.syslog_skip_cert_verify:
+    description: |
+      This disables TLS verification when connecting to a HTTPS or a Syslog TLS drain.
+    default: false
+  scalablesyslog.adapter.metrics_to_syslog_enabled:
+    description: |
+      By setting this value to true, the adapter will support writing
+      metrics into a syslog drain. Note, this feature requires Loggregator
+      v101 or higher.
+    default: false
+
+  scalablesyslog.adapter.tls.ca:
+    description: |
+      When the adapter accepts connections via gRPC it must validate the
+      clients' certificates were signed by a trusted CA. This is the CA
+      trusted by the adapter.
+  scalablesyslog.adapter.tls.cert:
+    description: |
+      This certificate is sent to gRPC clients when they initiate a connection.
+      It must be signed by a CA that is trusted by the client.
+  scalablesyslog.adapter.tls.key:
+    description: |
+      This is the private key for the certificate sent to gRPC clients when
+      they initiate a connection.
+  scalablesyslog.adapter.tls.cn:
+    description: |
+      This value is deprecated and not needed any longer.
+    default: ""
+
+  scalablesyslog.adapter_rlp.tls.ca:
+    description: |
+      When the adapter communicates with the RLP it must validate the
+      RLP's certificates were signed by a trusted CA. This is the CA
+      trusted by the adapter for that communication.
+  scalablesyslog.adapter_rlp.tls.cert:
+    description: |
+      This certificate is sent to the RLP when initiating a connection.
+      It must be signed by a CA that is trusted by the RLP.
+  scalablesyslog.adapter_rlp.tls.key:
+    description: |
+      This is the private key for the certificate sent to the RLP when
+      initiating a connection.
+  scalablesyslog.adapter_rlp.tls.cn:
+    description: |
+      When the adapter communicates with the RLP it must validate the RLP's
+      common name (CN) or subject alternative names (SANs) against the hostname
+      or IP address used to initiate the connection. Since we use a custom CN
+      for RLP this must be set to that value for validation to be successful.
+
+  scalablesyslog.metric_ingress_addr:
+    description: |
+      The address used to send metric data to metron.
+    default: localhost:3458
+  scalablesyslog.metric_ingress_cn:
+    description: |
+      When the adapter communicates with metron it must validate metron's
+      common name (CN) or subject alternative names (SANs) against the
+      hostname or IP address used to initiate the connection. Since we use a
+      custom CN for metron this must be set to that value for validation to be
+      successful.
+    default: metron
+
+  metric_emitter.interval:
+    description: The interval that metrics are emitted to metron.
+    default: 1m

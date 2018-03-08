@@ -1,0 +1,14 @@
+---
+name: datadog-consul-agent-server
+packages: []
+
+templates:
+  http_check.yaml.erb: config/datadog-integrations/http_check.yaml
+
+properties:
+  consul.server_port:
+    description: "Server port on which we expect the consul agent listening."
+    default: 8300
+  datadog.consul.monitor_url:
+    description: "URL for the datadog agent to connect to consul to monitor the integration. use nil to disable the integration."
+    default: http://localhost:8500

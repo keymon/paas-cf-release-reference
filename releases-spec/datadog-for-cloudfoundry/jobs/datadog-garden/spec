@@ -1,0 +1,11 @@
+---
+name: datadog-garden
+packages: []
+
+templates:
+  process.yaml.erb: config/datadog-integrations/process.yaml
+  http_check.yaml.erb: config/datadog-integrations/http_check.yaml
+
+properties:
+  garden.debug_listen_address:
+    description: "tcp address on which to serve debug info"

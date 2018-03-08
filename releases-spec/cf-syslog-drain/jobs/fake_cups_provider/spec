@@ -1,0 +1,31 @@
+---
+name: fake_cups_provider
+templates:
+  ctl.erb: bin/ctl
+  cups_ca.crt.erb: certs/cups_ca.crt
+  server.crt.erb: certs/server.crt
+  server.key.erb: certs/server.key
+  response_body.erb: bin/response_body
+  dns_health_check.erb: bin/dns_health_check
+
+packages:
+- fake_cups_provider
+
+consumes:
+- name: fake_consumer_addrs
+  type: consumer_addr
+
+provides:
+- name: cloud_controller
+  type: cloud_controller
+
+properties:
+  fake_cups_provider.port:
+    description: "The port for the fake CUPS provider"
+    default: 9023
+  fake_cups_provider.tls.ca:
+    description: "The CA for fake CUPS provider"
+  fake_cups_provider.tls.cert:
+    description: "The cert for the fake CUPS provider"
+  fake_cups_provider.tls.key:
+    description: "The key for the fake CUPS provider"

@@ -1,0 +1,4 @@
+---
+name: datadog-ipsec
+templates:
+  process.yaml.erb: config/datadog-integrations/process.yaml

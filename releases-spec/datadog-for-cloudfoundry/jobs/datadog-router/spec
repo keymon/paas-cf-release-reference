@@ -1,0 +1,16 @@
+---
+name: datadog-router
+packages: []
+
+templates:
+  process.yaml.erb: config/datadog-integrations/process.yaml
+  http_check.yaml.erb: config/datadog-integrations/http_check.yaml
+
+properties:
+  router.port:
+    description: "Listening Port for Router."
+    default: 80
+  router.healthcheck_user_agent:
+    description: User-Agent for the health check agent (usually the Load Balancer).
+    example: "ELB-HealthChecker/1.0"
+    default: "HTTP-Monitor/1.1"

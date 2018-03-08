@@ -1,0 +1,20 @@
+---
+name: datadog-bbs
+packages: []
+
+templates:
+  bbs_check.yaml.erb: config/datadog-integrations/bbs_check.yaml
+  ../integration/bbs/check.py: config/datadog-integrations/bbs_check.py
+
+properties:
+  bbs.url:
+    description: "URL of BBS API"
+    default: "https://localhost:8889/v1/ping"
+  bbs.timeout:
+    description: "BBS connection timeout"
+  bbs.client_cert:
+    description: "BBS client cert"
+  bbs.client_key:
+    description: "BBS client key"
+  bbs.ca_cert:
+    description: "BBS CA cert"
